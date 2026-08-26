@@ -359,6 +359,10 @@ function renderStats() {
   const body = document.getElementById("statsBody");
   const totalCards = state.cards.length;
   const mastered = state.cards.filter((c) => (c.box || 1) >= 5).length;
+  const percent = totalCards > 0 ? Math.round((mastered / totalCards) * 100) : 0;
+  document.getElementById("gaugeFill").style.width = percent + "%";
+  document.getElementById("gaugePercent").textContent = percent + "%";
+  document.getElementById("gaugeSub").textContent = `${mastered} / ${totalCards} 語 習得済み`;
   const rows = [
     ["現在の連続日数", `${state.stats.streak}日`],
     ["総単語数", `${totalCards}語`],

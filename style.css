@@ -234,6 +234,32 @@ body {
 .form .primary-btn { margin-top: 28px; }
 
 /* 統計 */
+.gauge-block { margin-bottom: 28px; }
+.gauge-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+.gauge-label span:first-child { color: var(--gray); }
+.gauge-label span:last-child { font-size: 22px; font-weight: 700; color: var(--black); }
+.gauge-track {
+  width: 100%;
+  height: 14px;
+  border: 1.5px solid var(--black);
+  border-radius: 7px;
+  overflow: hidden;
+  background: var(--white);
+}
+.gauge-fill {
+  height: 100%;
+  width: 0%;
+  background: var(--black);
+  transition: width 0.3s ease;
+}
+.gauge-sub { color: var(--gray); font-size: 13px; margin: 8px 0 0; }
+
 .stats-body { display: flex; flex-direction: column; gap: 0; }
 .stat-row {
   display: flex;

@@ -1,4 +1,4 @@
-const CACHE_NAME = "tango-cache-v1";
+const CACHE_NAME = "tango-cache-v2";
 const ASSETS = [
   "./index.html",
   "./style.css",
@@ -26,11 +26,15 @@ self.addEventListener("activate", (event) => {
   self.clients.claim();
 });
 
+// ネットワーク優先：オンライン時は常に最新を取得し、オフライン時のみキャッシュを使う
 self.addEventListener("fetch", (event) => {
   event.respondWith(
-    caches.match(event.request).then((cached) => {
-      if (cached) return cached;
-      return fetch(event.request).catch(() => cached);
-    })
+    fetch(event.request)
+      .then((response) => {
+        const copy = response.clone();
+        caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
+        return response;
+      })
+      .catch(() => caches.match(event.request))
   );
 });
