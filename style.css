@@ -142,27 +142,49 @@ body {
   width: 100%;
   max-width: 320px;
   height: 380px;
+  position: relative;
+  perspective: 1400px;
+  touch-action: pan-y;
+  user-select: none;
+}
+
+.card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.45s cubic-bezier(0.4, 0.2, 0.2, 1);
+  transform-style: preserve-3d;
+}
+
+.card-inner.flipped { transform: rotateY(180deg); }
+
+.card-face {
+  position: absolute;
+  inset: 0;
   border: 2px solid var(--black);
   border-radius: 20px;
+  background: var(--white);
   display: flex;
   align-items: center;
   justify-content: center;
-  position: relative;
-  background: var(--white);
-  touch-action: pan-y;
-  user-select: none;
   padding: 24px;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 
-.card-face {
+.card-face-back { transform: rotateY(180deg); }
+
+.card-face-text {
   font-size: 26px;
   font-weight: 600;
   text-align: center;
   word-break: break-word;
   line-height: 1.5;
+  max-height: 100%;
+  overflow-y: auto;
 }
 
-.card-face.card-back { font-size: 20px; font-weight: 400; }
+.card-face-text.card-back-text { font-size: 20px; font-weight: 400; }
 
 .speak-btn {
   position: absolute;

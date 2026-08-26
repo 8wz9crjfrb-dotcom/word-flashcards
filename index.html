@@ -45,9 +45,15 @@
     <p id="reviewProgress" class="progress"></p>
     <div id="cardStage" class="card-stage">
       <div id="reviewCard" class="card">
-        <button id="speakBtn" class="speak-btn hidden" aria-label="発音を聞く">🔊</button>
-        <div id="cardFront" class="card-face"></div>
-        <div id="cardBack" class="card-face card-back hidden"></div>
+        <div id="cardInner" class="card-inner">
+          <div class="card-face card-face-front">
+            <button id="speakBtn" class="speak-btn hidden" aria-label="発音を聞く">🔊</button>
+            <div id="cardFront" class="card-face-text"></div>
+          </div>
+          <div class="card-face card-face-back">
+            <div id="cardBack" class="card-face-text card-back-text"></div>
+          </div>
+        </div>
       </div>
     </div>
     <p class="hint">タップで裏返す / 左右にスワイプ</p>

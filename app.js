@@ -143,6 +143,7 @@ document.getElementById("deleteDeckBtn").addEventListener("click", () => {
 
 // ---------- 復習画面 ----------
 const cardStage = document.getElementById("reviewCard");
+const cardInner = document.getElementById("cardInner");
 const cardFront = document.getElementById("cardFront");
 const cardBack = document.getElementById("cardBack");
 const speakBtn = document.getElementById("speakBtn");
@@ -166,8 +167,10 @@ function showCurrentCard() {
   cardStage.style.transform = "";
   cardStage.style.transition = "";
   ui.flipped = false;
-  cardBack.classList.add("hidden");
-  cardFront.classList.remove("hidden");
+  cardInner.style.transition = "none";
+  cardInner.classList.remove("flipped");
+  void cardInner.offsetHeight;
+  cardInner.style.transition = "";
   reviewButtons.classList.add("hidden");
 
   if (ui.reviewIndex >= ui.reviewQueue.length) {
@@ -194,8 +197,7 @@ document.getElementById("reviewDoneBackBtn").addEventListener("click", () => goB
 cardStage.addEventListener("click", (e) => {
   if (e.target === speakBtn) return;
   ui.flipped = !ui.flipped;
-  cardFront.classList.toggle("hidden", ui.flipped);
-  cardBack.classList.toggle("hidden", !ui.flipped);
+  cardInner.classList.toggle("flipped", ui.flipped);
   reviewButtons.classList.toggle("hidden", !ui.flipped);
 });
 
