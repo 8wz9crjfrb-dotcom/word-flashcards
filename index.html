@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+<title>単語帳</title>
+<link rel="manifest" href="manifest.json" />
+<link rel="apple-touch-icon" href="icons/icon-192.png" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black" />
+<meta name="apple-mobile-web-app-title" content="単語帳" />
+<meta name="theme-color" content="#000000" />
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<header class="topbar">
+  <button id="backBtn" class="icon-btn hidden" aria-label="戻る">←</button>
+  <h1 id="topTitle">単語帳</h1>
+  <span class="topbar-spacer"></span>
+</header>
+
+<main id="app">
+
+  <!-- ホーム：デッキ一覧 -->
+  <section id="screen-home" class="screen">
+    <div id="deckList" class="deck-list"></div>
+    <button id="newDeckBtn" class="text-btn">＋ 新しいデッキ</button>
+  </section>
+
+  <!-- デッキ画面 -->
+  <section id="screen-deck" class="screen">
+    <h2 id="deckTitle" class="deck-heading"></h2>
+    <p id="deckDue" class="deck-sub"></p>
+    <div class="deck-actions">
+      <button id="startReviewBtn" class="primary-btn">復習する</button>
+      <button id="addCardBtn" class="secondary-btn">単語を追加</button>
+      <button id="viewListBtn" class="secondary-btn">単語一覧</button>
+      <button id="deleteDeckBtn" class="text-btn danger">このデッキを削除</button>
+    </div>
+  </section>
+
+  <!-- 復習画面 -->
+  <section id="screen-review" class="screen">
+    <p id="reviewProgress" class="progress"></p>
+    <div id="cardStage" class="card-stage">
+      <div id="reviewCard" class="card">
+        <button id="speakBtn" class="speak-btn hidden" aria-label="発音を聞く">🔊</button>
+        <div id="cardFront" class="card-face"></div>
+        <div id="cardBack" class="card-face card-back hidden"></div>
+      </div>
+    </div>
+    <p class="hint">タップで裏返す / 左右にスワイプ</p>
+    <div id="reviewButtons" class="review-buttons hidden">
+      <button id="stillBtn" class="review-btn no">まだ</button>
+      <button id="knowBtn" class="review-btn yes">覚えた</button>
+    </div>
+    <div id="reviewDone" class="review-done hidden">
+      <p>今日の復習は完了です。</p>
+      <button id="reviewDoneBackBtn" class="primary-btn">デッキ画面に戻る</button>
+    </div>
+  </section>
+
+  <!-- 単語一覧 -->
+  <section id="screen-list" class="screen">
+    <div id="cardTable" class="card-table"></div>
+  </section>
+
+  <!-- 単語追加/編集 -->
+  <section id="screen-add" class="screen">
+    <form id="cardForm" class="form">
+      <label>表（単語）</label>
+      <input id="fieldFront" type="text" required autocomplete="off" />
+      <label>裏（意味）</label>
+      <input id="fieldBack" type="text" required autocomplete="off" />
+      <label>例文（任意）</label>
+      <textarea id="fieldExample" rows="3"></textarea>
+      <button type="submit" class="primary-btn">保存</button>
+    </form>
+  </section>
+
+  <!-- 統計 -->
+  <section id="screen-stats" class="screen">
+    <div id="statsBody" class="stats-body"></div>
+  </section>
+
+</main>
+
+<nav class="bottombar">
+  <button class="nav-btn" data-nav="home">ホーム</button>
+  <button class="nav-btn" data-nav="stats">統計</button>
+</nav>
+
+<script src="app.js"></script>
+</body>
+</html>
