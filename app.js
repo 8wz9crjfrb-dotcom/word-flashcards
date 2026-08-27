@@ -578,12 +578,22 @@ statusKnownBtn.addEventListener("click", () => {
   updateStatusToggleUI(card);
 });
 
-cardForm.addEventListener("submit", (e) => {
+cardForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   const front = fieldFront.value.trim();
   const back = fieldBack.value.trim();
   const example = fieldExample.value.trim();
   if (!front || !back) return;
+
+  if (!ui.editingCardId) {
+    const dup = state.cards.find(
+      (c) => c.deckId === ui.currentDeckId && c.front.toLowerCase() === front.toLowerCase()
+    );
+    if (dup) {
+      const ok = await showConfirm(`「${front}」は既にこのデッキに登録されています。\nこのまま追加しますか？`);
+      if (!ok) return;
+    }
+  }
 
   if (ui.editingCardId) {
     const card = state.cards.find((c) => c.id === ui.editingCardId);
@@ -688,18 +698,40 @@ document.getElementById("photoReselectBtn").addEventListener("click", () => {
   showPhotoStep("crop");
 });
 
+// OCRは同一オリジンに同梱したファイルのみを使う（CDN不要・オフラインでも動作）
+// location.href を基準に解決するため、OCR機能を実際に使うタイミングまで計算を遅らせる
+function ocrBase() {
+  return new URL(".", location.href).href;
+}
+
 let tesseractLoadPromise = null;
 function loadTesseract() {
   if (window.Tesseract) return Promise.resolve();
   if (tesseractLoadPromise) return tesseractLoadPromise;
   tesseractLoadPromise = new Promise((resolve, reject) => {
     const script = document.createElement("script");
-    script.src = "https://cdn.jsdelivr.net/npm/tesseract.js@5.0.4/dist/tesseract.min.js";
+    script.src = ocrBase() + "vendor/tesseract/tesseract.min.js";
     script.onload = resolve;
     script.onerror = () => reject(new Error("load failed"));
     document.head.appendChild(script);
   });
   return tesseractLoadPromise;
+}
+
+async function recognizeEnglishText(canvas) {
+  await loadTesseract();
+  const base = ocrBase();
+  const worker = await Tesseract.createWorker("eng", 1, {
+    workerPath: base + "vendor/tesseract/worker.min.js",
+    corePath: base + "vendor/tesseract-core",
+    langPath: base + "vendor/tessdata",
+  });
+  try {
+    const { data } = await worker.recognize(canvas);
+    return data.text.trim();
+  } finally {
+    await worker.terminate();
+  }
 }
 
 document.getElementById("photoRecognizeBtn").addEventListener("click", async () => {
@@ -723,9 +755,7 @@ document.getElementById("photoRecognizeBtn").addEventListener("click", async () 
 
   showPhotoStep("loading");
   try {
-    await loadTesseract();
-    const { data } = await Tesseract.recognize(canvas, "eng");
-    const raw = data.text.trim();
+    const raw = await recognizeEnglishText(canvas);
     const text = ui.photoTarget === "example" ? raw : raw.split(/\s+/)[0] || "";
     photoResultField.value = text;
     showPhotoStep("result");
