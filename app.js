@@ -6,8 +6,7 @@ function loadData() {
   if (raw) return JSON.parse(raw);
   const data = {
     decks: [
-      { id: uid(), name: "英単語", type: "english" },
-      { id: uid(), name: "古典単語", type: "classical" },
+      { id: uid(), name: "英単語" },
     ],
     cards: [],
     stats: { streak: 0, lastReviewDate: null },
@@ -22,6 +21,10 @@ function saveData(data) {
 
 function uid() {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+}
+
+function isEnglishText(text) {
+  return /[a-zA-Z]/.test(text) && !/[぀-ヿ㐀-鿿＀-￯]/.test(text);
 }
 
 let state = loadData();
@@ -103,9 +106,8 @@ function renderHome() {
 
 document.getElementById("newDeckBtn").addEventListener("click", () => {
   const name = prompt("デッキ名を入力してください");
-  if (!name) return;
-  const type = confirm("英単語デッキですか？（OK=英単語／キャンセル=その他）") ? "english" : "classical";
-  state.decks.push({ id: uid(), name, type });
+  if (!name || !name.trim()) return;
+  state.decks.push({ id: uid(), name: name.trim() });
   saveData(state);
   renderHome();
 });
@@ -137,6 +139,14 @@ document.getElementById("addCardBtn").addEventListener("click", () => {
   navigate("add", { back: true, title: "単語を追加" });
 });
 document.getElementById("viewListBtn").addEventListener("click", () => navigate("list", { back: true, title: "単語一覧" }));
+document.getElementById("renameDeckBtn").addEventListener("click", () => {
+  const deck = currentDeck();
+  const name = prompt("新しいデッキ名を入力してください", deck.name);
+  if (!name || !name.trim()) return;
+  deck.name = name.trim();
+  saveData(state);
+  renderDeck();
+});
 document.getElementById("deleteDeckBtn").addEventListener("click", () => {
   const deck = currentDeck();
   if (!confirm(`「${deck.name}」を削除しますか？中の単語もすべて削除されます。`)) return;
@@ -168,7 +178,6 @@ function startReview() {
 }
 
 function showCurrentCard() {
-  const deck = currentDeck();
   cardStage.style.transform = "";
   cardStage.style.transition = "";
   ui.flipped = false;
@@ -197,7 +206,7 @@ function showCurrentCard() {
   cardBack.textContent = card.back + (card.example ? "\n\n例文: " + card.example : "");
   cardBack.style.whiteSpace = "pre-line";
   reviewProgress.textContent = `${ui.reviewIndex + 1} / ${ui.reviewQueue.length}`;
-  speakBtn.classList.toggle("hidden", deck.type !== "english");
+  speakBtn.classList.toggle("hidden", !isEnglishText(card.front));
 }
 
 document.getElementById("reviewDoneBackBtn").addEventListener("click", () => goBack());
