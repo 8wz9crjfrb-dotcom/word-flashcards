@@ -487,6 +487,11 @@ document.getElementById("photoRetakeBtn2").addEventListener("click", () => {
   resetPhotoState();
   showPhotoStep("pick");
 });
+document.getElementById("photoReselectBtn").addEventListener("click", () => {
+  selectionBox.classList.add("hidden");
+  photoResultField.value = "";
+  showPhotoStep("crop");
+});
 
 let tesseractLoadPromise = null;
 function loadTesseract() {
