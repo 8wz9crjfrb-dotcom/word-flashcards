@@ -530,10 +530,6 @@ body {
 .settings-block:first-child { display: flex; align-items: center; justify-content: space-between; }
 .settings-block:first-child > label { margin-bottom: 0; }
 
-.backup-block { margin-top: 0; }
-.backup-actions { display: flex; gap: 12px; margin-top: 8px; }
-.backup-actions button { flex: 1; }
-
 /* 使い方 */
 .help-section { margin-bottom: 28px; }
 .help-section h3 { font-size: 15px; margin: 0 0 10px; }

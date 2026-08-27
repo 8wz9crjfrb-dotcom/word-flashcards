@@ -888,64 +888,6 @@ function renderStats() {
     .join("");
 }
 
-// ---------- バックアップ ----------
-document.getElementById("exportBtn").addEventListener("click", () => {
-  const payload = { decks: state.decks, cards: state.cards, exportedAt: Date.now() };
-  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
-  const dateStr = new Date().toISOString().slice(0, 10);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `単語帳バックアップ_${dateStr}.json`;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  URL.revokeObjectURL(url);
-});
-
-const importInput = document.getElementById("importInput");
-document.getElementById("importBtn").addEventListener("click", () => importInput.click());
-
-importInput.addEventListener("change", () => {
-  const file = importInput.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = async () => {
-    try {
-      const imported = JSON.parse(reader.result);
-      if (!Array.isArray(imported.decks) || !Array.isArray(imported.cards)) {
-        throw new Error("invalid format");
-      }
-      const idMap = {};
-      imported.decks.forEach((d) => {
-        const newId = uid();
-        idMap[d.id] = newId;
-        state.decks.push({ id: newId, name: d.name || "デッキ" });
-      });
-      imported.cards.forEach((c) => {
-        const newDeckId = idMap[c.deckId];
-        if (!newDeckId || !c.front || !c.back) return;
-        state.cards.push({
-          id: uid(),
-          deckId: newDeckId,
-          front: c.front,
-          back: c.back,
-          example: c.example || "",
-          known: !!c.known,
-          createdAt: c.createdAt || Date.now(),
-        });
-      });
-      saveData(state);
-      renderStats();
-      await showAlert(`${imported.decks.length}デッキ・${imported.cards.length}単語を読み込みました`);
-    } catch (err) {
-      await showAlert("読み込みに失敗しました。正しいバックアップファイルか確認してください。");
-    }
-    importInput.value = "";
-  };
-  reader.readAsText(file);
-});
-
 function escapeHtml(str) {
   const div = document.createElement("div");
   div.textContent = str;
