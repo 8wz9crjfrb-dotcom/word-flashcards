@@ -34,6 +34,12 @@ function isEnglishText(text) {
   return /[a-zA-Z]/.test(text) && !/[぀-ヿ㐀-鿿＀-￯]/.test(text);
 }
 
+// 日本語の文字（ひらがな・カタカナ・漢字・全角記号）を取り除き、
+// 残った英語部分だけを返す（例文に日本語訳が混ざっている場合に使用）
+function extractEnglish(text) {
+  return text.replace(/[　-〿぀-ヿ㐀-鿿＀-￯]+/g, " ").replace(/\s+/g, " ").trim();
+}
+
 // ---------- モーダルダイアログ ----------
 const modalOverlay = document.getElementById("modalOverlay");
 const modalMessage = document.getElementById("modalMessage");
@@ -300,7 +306,7 @@ function showCurrentCard() {
   cardBackExample.classList.toggle("hidden", !card.example);
   reviewProgress.textContent = `${ui.reviewIndex + 1} / ${ui.reviewQueue.length}`;
   speakBtn.classList.toggle("hidden", !isEnglishText(card.front));
-  exampleSpeakBtn.classList.toggle("hidden", !isEnglishText(card.example || ""));
+  exampleSpeakBtn.classList.toggle("hidden", !extractEnglish(card.example || ""));
 }
 
 document.getElementById("reviewDoneBackBtn").addEventListener("click", () => goBack());
@@ -325,7 +331,9 @@ speakBtn.addEventListener("click", () => {
 exampleSpeakBtn.addEventListener("click", () => {
   const card = ui.reviewQueue[ui.reviewIndex];
   if (!card || !card.example) return;
-  const utter = new SpeechSynthesisUtterance(card.example);
+  const englishOnly = extractEnglish(card.example);
+  if (!englishOnly) return;
+  const utter = new SpeechSynthesisUtterance(englishOnly);
   utter.lang = "en-US";
   speechSynthesis.cancel();
   speechSynthesis.speak(utter);
