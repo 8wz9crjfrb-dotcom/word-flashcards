@@ -292,6 +292,19 @@ body {
 }
 .filter-btn.active { background: var(--black); color: var(--white); }
 
+.list-sort { display: flex; gap: 8px; margin-top: 8px; }
+.sort-btn {
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1.5px solid var(--black);
+  background: var(--white);
+  color: var(--black);
+}
+.sort-btn.active { background: var(--black); color: var(--white); }
+
 .card-table { display: flex; flex-direction: column; }
 .card-item { position: relative; overflow: hidden; border-bottom: 1px solid var(--line); }
 .card-item-delete-bg {

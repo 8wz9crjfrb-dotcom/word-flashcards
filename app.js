@@ -100,6 +100,7 @@ let ui = {
   prefillFront: null,
   listSearch: "",
   listFilter: "all",
+  listSort: "added",
   photoTarget: "front",
 };
 
@@ -401,6 +402,7 @@ function recordReviewToday() {
 // ---------- 単語一覧 ----------
 const listSearchInput = document.getElementById("listSearch");
 const filterBtns = document.querySelectorAll(".filter-btn");
+const sortBtns = document.querySelectorAll(".sort-btn");
 
 listSearchInput.addEventListener("input", () => {
   ui.listSearch = listSearchInput.value;
@@ -415,11 +417,20 @@ filterBtns.forEach((btn) => {
   });
 });
 
+sortBtns.forEach((btn) => {
+  btn.addEventListener("click", () => {
+    ui.listSort = btn.dataset.sort;
+    sortBtns.forEach((b) => b.classList.toggle("active", b === btn));
+    renderList();
+  });
+});
+
 function renderList() {
   const deck = currentDeck();
   const container = document.getElementById("cardTable");
   listSearchInput.value = ui.listSearch;
   filterBtns.forEach((b) => b.classList.toggle("active", b.dataset.filter === ui.listFilter));
+  sortBtns.forEach((b) => b.classList.toggle("active", b.dataset.sort === ui.listSort));
 
   const allCards = state.cards.filter((c) => c.deckId === deck.id);
   let cards = allCards;
@@ -430,6 +441,9 @@ function renderList() {
     cards = cards.filter(
       (c) => c.front.toLowerCase().includes(query) || c.back.toLowerCase().includes(query)
     );
+  }
+  if (ui.listSort === "alpha") {
+    cards = [...cards].sort((a, b) => a.front.localeCompare(b.front));
   }
 
   container.innerHTML = "";
