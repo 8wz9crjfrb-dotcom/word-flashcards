@@ -125,8 +125,24 @@ body {
 
 /* デッキ画面 */
 .deck-heading { font-size: 22px; margin: 8px 0 4px; }
-.deck-sub { color: var(--gray); font-size: 14px; margin: 0 0 24px; }
+.deck-sub { color: var(--gray); font-size: 14px; margin: 0 0 20px; }
 .deck-actions { display: flex; flex-direction: column; gap: 12px; }
+
+.quiz-mode-select { margin-bottom: 20px; }
+.quiz-mode-select > label { display: block; font-size: 13px; color: var(--gray); margin-bottom: 8px; }
+.quiz-mode-buttons { display: flex; gap: 8px; }
+.quiz-mode-btn {
+  flex: 1;
+  padding: 8px 4px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1.5px solid var(--black);
+  background: var(--white);
+  color: var(--black);
+}
+.quiz-mode-btn.active { background: var(--black); color: var(--white); }
 
 .primary-btn {
   background: var(--black);
@@ -264,6 +280,49 @@ body {
 
 .review-done { text-align: center; }
 .review-done p { font-size: 16px; margin-bottom: 20px; }
+
+/* タイピング／穴埋めモード */
+.quiz-stage {
+  flex: 1;
+  width: 100%;
+  max-width: 320px;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.quiz-prompt-card {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--black);
+  border-radius: 20px;
+  padding: 24px;
+  min-height: 200px;
+  margin-bottom: 20px;
+}
+.quiz-prompt-text {
+  font-size: 22px;
+  font-weight: 600;
+  text-align: center;
+  line-height: 1.6;
+  word-break: break-word;
+}
+.quiz-stage input {
+  width: 100%;
+  border: none;
+  border-bottom: 1.5px solid var(--black);
+  padding: 12px 4px;
+  font-size: 18px;
+  font-family: inherit;
+  background: transparent;
+  color: var(--black);
+  text-align: center;
+}
+.quiz-stage input:focus { outline: none; }
+.quiz-stage input:disabled { color: var(--gray); }
+.quiz-feedback { text-align: center; font-size: 16px; font-weight: 600; margin: 16px 0 0; }
+.quiz-stage .primary-btn { margin-top: 16px; }
 
 /* 単語一覧 */
 .list-controls { margin-bottom: 8px; }

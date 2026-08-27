@@ -102,6 +102,8 @@ let ui = {
   listFilter: "all",
   listSort: "added",
   photoTarget: "front",
+  quizMode: "card",
+  blankUnavailable: false,
 };
 
 // ---------- ナビゲーション ----------
@@ -211,6 +213,14 @@ function renderDeck() {
   topTitle.textContent = deck.name;
 }
 
+const quizModeBtns = document.querySelectorAll(".quiz-mode-btn");
+quizModeBtns.forEach((btn) => {
+  btn.addEventListener("click", () => {
+    ui.quizMode = btn.dataset.mode;
+    quizModeBtns.forEach((b) => b.classList.toggle("active", b === btn));
+  });
+});
+
 document.getElementById("startReviewBtn").addEventListener("click", () => {
   ui.reviewMode = "due";
   navigate("review", { back: true, title: currentDeck().name });
@@ -264,17 +274,33 @@ function updateReviewHint() {
   reviewHint.textContent = ui.flipped ? "タップで裏返す / 左右にスワイプ" : "タップで裏返す";
 }
 
+// 例文中の単語部分を空欄にする（見つからなければ null）
+function makeBlank(example, front) {
+  const idx = example.toLowerCase().indexOf(front.toLowerCase());
+  if (idx === -1) return null;
+  return example.slice(0, idx) + "_____" + example.slice(idx + front.length);
+}
+
 function startReview() {
   const deckId = ui.currentDeckId;
-  ui.reviewQueue = state.cards
-    .filter((c) => c.deckId === deckId && (ui.reviewMode === "all" || !c.known))
-    .sort(() => Math.random() - 0.5);
+  const base = state.cards.filter((c) => c.deckId === deckId && (ui.reviewMode === "all" || !c.known));
+  let pool = base;
+  ui.blankUnavailable = false;
+  if (ui.quizMode === "blank") {
+    pool = base.filter((c) => c.example && makeBlank(c.example, c.front));
+    ui.blankUnavailable = base.length > 0 && pool.length === 0;
+  }
+  ui.reviewQueue = [...pool].sort(() => Math.random() - 0.5);
   ui.reviewIndex = 0;
   reviewDone.classList.add("hidden");
   showCurrentCard();
 }
 
 function showCurrentCard() {
+  const isQuiz = ui.quizMode === "typing" || ui.quizMode === "blank";
+  const cardStageEl = document.getElementById("cardStage");
+  const quizStageEl = document.getElementById("quizStage");
+
   cardStage.style.transform = "";
   cardStage.style.transition = "";
   ui.flipped = false;
@@ -284,31 +310,89 @@ function showCurrentCard() {
   cardInner.style.transition = "";
   reviewButtons.classList.add("answer-hidden");
 
-  updateReviewHint();
-
   if (ui.reviewIndex >= ui.reviewQueue.length) {
-    document.getElementById("cardStage").classList.add("hidden");
+    cardStageEl.classList.add("hidden");
     reviewHint.classList.add("hidden");
     reviewButtons.classList.add("hidden");
+    quizStageEl.classList.add("hidden");
     reviewProgress.textContent = "";
-    document.getElementById("reviewDoneText").textContent =
-      ui.reviewMode === "all" ? "デッキに単語がありません。" : "覚えていない単語はありません。";
+    document.getElementById("reviewDoneText").textContent = ui.blankUnavailable
+      ? "穴埋めに使える例文の単語がありません。他の出題形式をお試しください。"
+      : ui.reviewMode === "all"
+      ? "デッキに単語がありません。"
+      : "覚えていない単語はありません。";
     reviewDone.classList.remove("hidden");
     return;
   }
-  document.getElementById("cardStage").classList.remove("hidden");
-  reviewHint.classList.remove("hidden");
-  reviewButtons.classList.remove("hidden");
 
   const card = ui.reviewQueue[ui.reviewIndex];
+  reviewProgress.textContent = `${ui.reviewIndex + 1} / ${ui.reviewQueue.length}`;
+
+  if (isQuiz) {
+    cardStageEl.classList.add("hidden");
+    reviewHint.classList.add("hidden");
+    reviewButtons.classList.add("hidden");
+    quizStageEl.classList.remove("hidden");
+    setupQuizCard(card);
+    return;
+  }
+
+  quizStageEl.classList.add("hidden");
+  cardStageEl.classList.remove("hidden");
+  reviewHint.classList.remove("hidden");
+  updateReviewHint();
+
   cardFront.textContent = card.front;
   cardBackMeaning.textContent = card.back;
   cardBackExample.textContent = card.example || "";
   cardBackExample.classList.toggle("hidden", !card.example);
-  reviewProgress.textContent = `${ui.reviewIndex + 1} / ${ui.reviewQueue.length}`;
   speakBtn.classList.toggle("hidden", !isEnglishText(card.front));
   exampleSpeakBtn.classList.toggle("hidden", !extractEnglish(card.example || ""));
 }
+
+function setupQuizCard(card) {
+  const quizPrompt = document.getElementById("quizPrompt");
+  const quizInput = document.getElementById("quizInput");
+  const quizFeedback = document.getElementById("quizFeedback");
+  quizPrompt.textContent = ui.quizMode === "blank" ? makeBlank(card.example, card.front) : card.back;
+  quizInput.value = "";
+  quizInput.disabled = false;
+  quizFeedback.classList.add("hidden");
+  document.getElementById("quizCheckBtn").classList.remove("hidden");
+  document.getElementById("quizNextBtn").classList.add("hidden");
+  setTimeout(() => quizInput.focus(), 50);
+}
+
+function checkQuizAnswer() {
+  const card = ui.reviewQueue[ui.reviewIndex];
+  if (!card) return;
+  const quizInput = document.getElementById("quizInput");
+  const quizFeedback = document.getElementById("quizFeedback");
+  const answer = quizInput.value.trim();
+  const correct = answer.length > 0 && answer.toLowerCase() === card.front.toLowerCase();
+  card.known = correct;
+  recordReviewToday();
+  saveData(state);
+
+  quizFeedback.textContent = correct ? "○ 正解" : `× 正しくは: ${card.front}`;
+  quizFeedback.classList.remove("hidden");
+  quizInput.disabled = true;
+  document.getElementById("quizCheckBtn").classList.add("hidden");
+  document.getElementById("quizNextBtn").classList.remove("hidden");
+}
+
+document.getElementById("quizCheckBtn").addEventListener("click", checkQuizAnswer);
+document.getElementById("quizNextBtn").addEventListener("click", () => {
+  ui.reviewIndex++;
+  showCurrentCard();
+});
+document.getElementById("quizInput").addEventListener("keydown", (e) => {
+  if (e.key !== "Enter") return;
+  e.preventDefault();
+  const checkBtn = document.getElementById("quizCheckBtn");
+  if (!checkBtn.classList.contains("hidden")) checkBtn.click();
+  else document.getElementById("quizNextBtn").click();
+});
 
 document.getElementById("reviewDoneBackBtn").addEventListener("click", () => goBack());
 

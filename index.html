@@ -31,6 +31,14 @@
   <section id="screen-deck" class="screen">
     <h2 id="deckTitle" class="deck-heading"></h2>
     <p id="deckDue" class="deck-sub"></p>
+    <div class="quiz-mode-select">
+      <label>出題形式</label>
+      <div class="quiz-mode-buttons">
+        <button class="quiz-mode-btn active" data-mode="card">カード</button>
+        <button class="quiz-mode-btn" data-mode="typing">タイピング</button>
+        <button class="quiz-mode-btn" data-mode="blank">穴埋め</button>
+      </div>
+    </div>
     <div class="deck-actions">
       <button id="startReviewBtn" class="primary-btn">復習する</button>
       <button id="reviewAllBtn" class="secondary-btn">総復習</button>
@@ -79,6 +87,17 @@
       <button id="stillBtn" class="review-btn no">まだ</button>
       <button id="knowBtn" class="review-btn yes">覚えた</button>
     </div>
+
+    <div id="quizStage" class="quiz-stage hidden">
+      <div class="quiz-prompt-card">
+        <div id="quizPrompt" class="quiz-prompt-text"></div>
+      </div>
+      <input id="quizInput" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="英単語を入力" />
+      <p id="quizFeedback" class="quiz-feedback hidden"></p>
+      <button id="quizCheckBtn" class="primary-btn">答え合わせ</button>
+      <button id="quizNextBtn" class="primary-btn hidden">次へ</button>
+    </div>
+
     <div id="reviewDone" class="review-done hidden">
       <p id="reviewDoneText"></p>
       <button id="reviewDoneBackBtn" class="primary-btn">デッキ画面に戻る</button>
