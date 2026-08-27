@@ -1,6 +1,5 @@
 const STORAGE_KEY = "tangoAppData_v1";
 const DAY_MS = 24 * 60 * 60 * 1000;
-const BOX_INTERVALS = [1, 1, 2, 4, 8, 16]; // index = box number (1-5)
 
 function loadData() {
   const raw = localStorage.getItem(STORAGE_KEY);
@@ -78,9 +77,8 @@ document.querySelectorAll(".nav-btn").forEach((b) => {
 });
 
 // ---------- ホーム ----------
-function dueCount(deckId) {
-  const now = Date.now();
-  return state.cards.filter((c) => c.deckId === deckId && c.nextReview <= now).length;
+function pendingCount(deckId) {
+  return state.cards.filter((c) => c.deckId === deckId && (c.box || 1) < 5).length;
 }
 
 function renderHome() {
@@ -88,12 +86,12 @@ function renderHome() {
   list.innerHTML = "";
   state.decks.forEach((deck) => {
     const total = state.cards.filter((c) => c.deckId === deck.id).length;
-    const due = dueCount(deck.id);
+    const pending = pendingCount(deck.id);
     const row = document.createElement("div");
     row.className = "deck-row";
     row.innerHTML = `
       <span class="deck-name">${escapeHtml(deck.name)}</span>
-      <span class="deck-count ${due > 0 ? "due" : ""}">${total}語 ${due > 0 ? `/ 本日${due}件` : ""}</span>
+      <span class="deck-count ${pending > 0 ? "due" : ""}">${total}語 ${pending > 0 ? `/ 未習得${pending}件` : ""}</span>
     `;
     row.addEventListener("click", () => {
       ui.currentDeckId = deck.id;
@@ -121,8 +119,8 @@ function renderDeck() {
   const deck = currentDeck();
   document.getElementById("deckTitle").textContent = deck.name;
   const total = state.cards.filter((c) => c.deckId === deck.id).length;
-  const due = dueCount(deck.id);
-  document.getElementById("deckDue").textContent = `全${total}語 ・ 本日の復習 ${due}件`;
+  const pending = pendingCount(deck.id);
+  document.getElementById("deckDue").textContent = `全${total}語 ・ 未習得 ${pending}件`;
   topTitle.textContent = deck.name;
 }
 
@@ -161,9 +159,8 @@ const reviewProgress = document.getElementById("reviewProgress");
 
 function startReview() {
   const deckId = ui.currentDeckId;
-  const now = Date.now();
   ui.reviewQueue = state.cards
-    .filter((c) => c.deckId === deckId && (ui.reviewMode === "all" || c.nextReview <= now))
+    .filter((c) => c.deckId === deckId && (ui.reviewMode === "all" || (c.box || 1) < 5))
     .sort(() => Math.random() - 0.5);
   ui.reviewIndex = 0;
   reviewDone.classList.add("hidden");
@@ -186,6 +183,8 @@ function showCurrentCard() {
     document.querySelector(".hint").classList.add("hidden");
     reviewButtons.classList.add("hidden");
     reviewProgress.textContent = "";
+    document.getElementById("reviewDoneText").textContent =
+      ui.reviewMode === "all" ? "デッキに単語がありません。" : "覚えていない単語はありません。";
     reviewDone.classList.remove("hidden");
     return;
   }
@@ -226,7 +225,6 @@ function answerCard(correct) {
   } else {
     card.box = 1;
   }
-  card.nextReview = Date.now() + BOX_INTERVALS[card.box] * DAY_MS;
   recordReviewToday();
   saveData(state);
   ui.reviewIndex++;
@@ -347,7 +345,6 @@ function renderAddForm() {
 statusNotYetBtn.addEventListener("click", () => {
   const card = state.cards.find((c) => c.id === ui.editingCardId);
   card.box = 1;
-  card.nextReview = Date.now();
   saveData(state);
   updateStatusToggleUI(card);
 });
@@ -355,7 +352,6 @@ statusNotYetBtn.addEventListener("click", () => {
 statusKnownBtn.addEventListener("click", () => {
   const card = state.cards.find((c) => c.id === ui.editingCardId);
   card.box = 5;
-  card.nextReview = Date.now() + BOX_INTERVALS[5] * DAY_MS;
   saveData(state);
   updateStatusToggleUI(card);
 });
@@ -380,7 +376,6 @@ cardForm.addEventListener("submit", (e) => {
       back,
       example,
       box: 1,
-      nextReview: Date.now(),
       createdAt: Date.now(),
     });
   }
