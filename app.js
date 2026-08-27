@@ -240,6 +240,11 @@ const speakBtn = document.getElementById("speakBtn");
 const reviewButtons = document.getElementById("reviewButtons");
 const reviewDone = document.getElementById("reviewDone");
 const reviewProgress = document.getElementById("reviewProgress");
+const reviewHint = document.getElementById("reviewHint");
+
+function updateReviewHint() {
+  reviewHint.textContent = ui.flipped ? "タップで裏返す / 左右にスワイプ" : "タップで裏返す";
+}
 
 function startReview() {
   const deckId = ui.currentDeckId;
@@ -261,9 +266,11 @@ function showCurrentCard() {
   cardInner.style.transition = "";
   reviewButtons.classList.add("answer-hidden");
 
+  updateReviewHint();
+
   if (ui.reviewIndex >= ui.reviewQueue.length) {
     document.getElementById("cardStage").classList.add("hidden");
-    document.querySelector(".hint").classList.add("hidden");
+    reviewHint.classList.add("hidden");
     reviewButtons.classList.add("hidden");
     reviewProgress.textContent = "";
     document.getElementById("reviewDoneText").textContent =
@@ -272,7 +279,7 @@ function showCurrentCard() {
     return;
   }
   document.getElementById("cardStage").classList.remove("hidden");
-  document.querySelector(".hint").classList.remove("hidden");
+  reviewHint.classList.remove("hidden");
   reviewButtons.classList.remove("hidden");
 
   const card = ui.reviewQueue[ui.reviewIndex];
@@ -290,6 +297,7 @@ cardStage.addEventListener("click", (e) => {
   ui.flipped = !ui.flipped;
   cardInner.classList.toggle("flipped", ui.flipped);
   reviewButtons.classList.toggle("answer-hidden", !ui.flipped);
+  updateReviewHint();
 });
 
 speakBtn.addEventListener("click", () => {
