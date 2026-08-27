@@ -317,7 +317,7 @@ function showCurrentCard() {
     document.getElementById("reviewDoneText").textContent = ui.blankUnavailable
       ? "穴埋めに使える例文の単語がありません。他の出題形式をお試しください。"
       : ui.listeningUnavailable
-      ? "リスニングに使える単語（発音できる英単語）がありません。他の出題形式をお試しください。"
+      ? "リスニングに使える単語（再生できる英単語）がありません。他の出題形式をお試しください。"
       : ui.reviewMode === "all"
       ? "デッキに単語がありません。"
       : "覚えていない単語はありません。";
