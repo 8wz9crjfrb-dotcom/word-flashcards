@@ -577,24 +577,50 @@ function renderList() {
 
 function attachSwipeToDelete(inner) {
   const REVEAL = 84;
+  const AXIS_LOCK = 8; // px of movement before deciding swipe vs scroll
   let startX = null;
+  let startY = null;
   let dragging = false;
+  let axis = null; // "x" (horizontal swipe) | "y" (vertical scroll) | null (undecided)
 
   inner.addEventListener("pointerdown", (e) => {
     startX = e.clientX;
+    startY = e.clientY;
     dragging = true;
+    axis = null;
     inner.style.transition = "none";
-    inner.setPointerCapture(e.pointerId);
   });
   inner.addEventListener("pointermove", (e) => {
     if (!dragging) return;
+    const dxRaw = e.clientX - startX;
+    const dyRaw = e.clientY - startY;
+
+    if (axis === null) {
+      if (Math.abs(dxRaw) < AXIS_LOCK && Math.abs(dyRaw) < AXIS_LOCK) return;
+      axis = Math.abs(dxRaw) > Math.abs(dyRaw) ? "x" : "y";
+      if (axis === "x") {
+        inner.setPointerCapture(e.pointerId);
+      } else {
+        // 縦スクロールと判断。ブラウザの標準スクロールに任せる。
+        dragging = false;
+        inner.style.transition = "";
+        return;
+      }
+    }
+    if (axis !== "x") return;
+
     const base = inner.classList.contains("swiped") ? -REVEAL : 0;
-    const dx = Math.max(-REVEAL, Math.min(0, base + (e.clientX - startX)));
+    const dx = Math.max(-REVEAL, Math.min(0, base + dxRaw));
     inner.style.transform = `translateX(${dx}px)`;
   });
   function end(e) {
-    if (!dragging) return;
+    if (!dragging || axis !== "x") {
+      dragging = false;
+      axis = null;
+      return;
+    }
     dragging = false;
+    axis = null;
     inner.style.transition = "";
     inner.style.transform = "";
     const wasSwiped = inner.classList.contains("swiped");
