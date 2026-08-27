@@ -37,6 +37,7 @@
         <button class="quiz-mode-btn active" data-mode="card">カード</button>
         <button class="quiz-mode-btn" data-mode="typing">タイピング</button>
         <button class="quiz-mode-btn" data-mode="blank">穴埋め</button>
+        <button class="quiz-mode-btn" data-mode="listening">リスニング</button>
       </div>
     </div>
     <div class="deck-actions">
@@ -89,8 +90,16 @@
     <div id="quizStage" class="quiz-stage hidden">
       <div class="quiz-prompt-card">
         <div id="quizPrompt" class="quiz-prompt-text"></div>
+        <button id="quizPlayBtn" class="quiz-play-btn hidden" aria-label="音声を再生">
+          <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 9.5v5h3.5l5 3.8V5.7l-5 3.8H4z" />
+            <path d="M16 9a4.5 4.5 0 0 1 0 6" />
+            <path d="M18.5 6.8a8 8 0 0 1 0 10.4" />
+          </svg>
+        </button>
       </div>
       <input id="quizInput" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="単語を入力" />
+      <div id="quizChoices" class="quiz-choices hidden"></div>
       <p id="quizFeedback" class="quiz-feedback hidden"></p>
       <button id="quizCheckBtn" class="primary-btn">答え合わせ</button>
       <button id="quizNextBtn" class="primary-btn hidden">次へ</button>
@@ -237,6 +246,7 @@
       <p><strong>カード</strong>：タップして裏返し、答え合わせをします。</p>
       <p><strong>タイピング</strong>：意味を見て単語を入力します。</p>
       <p><strong>穴埋め</strong>：例文中の単語部分が空欄になり、文脈から思い出して入力します（例文が登録されている単語のみ対象）。</p>
+      <p><strong>リスニング</strong>：単語の発音を聞いて、意味を4択から選びます（デッキ内に単語が2つ以上必要）。</p>
     </div>
     <div class="help-section">
       <h3>復習する／総復習</h3>

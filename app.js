@@ -279,9 +279,15 @@ function startReview() {
   const base = state.cards.filter((c) => c.deckId === deckId && (ui.reviewMode === "all" || !c.known));
   let pool = base;
   ui.blankUnavailable = false;
+  ui.listeningUnavailable = false;
   if (ui.quizMode === "blank") {
     pool = base.filter((c) => c.example && makeBlank(c.example, c.front));
     ui.blankUnavailable = base.length > 0 && pool.length === 0;
+  }
+  if (ui.quizMode === "listening") {
+    const deckCardCount = state.cards.filter((c) => c.deckId === deckId).length;
+    ui.listeningUnavailable = base.length > 0 && deckCardCount < 2;
+    if (ui.listeningUnavailable) pool = [];
   }
   ui.reviewQueue = [...pool].sort(() => Math.random() - 0.5);
   ui.reviewIndex = 0;
@@ -290,7 +296,7 @@ function startReview() {
 }
 
 function showCurrentCard() {
-  const isQuiz = ui.quizMode === "typing" || ui.quizMode === "blank";
+  const isQuiz = ui.quizMode === "typing" || ui.quizMode === "blank" || ui.quizMode === "listening";
   const cardStageEl = document.getElementById("cardStage");
   const quizStageEl = document.getElementById("quizStage");
 
@@ -311,6 +317,8 @@ function showCurrentCard() {
     reviewProgress.textContent = "";
     document.getElementById("reviewDoneText").textContent = ui.blankUnavailable
       ? "穴埋めに使える例文の単語がありません。他の出題形式をお試しください。"
+      : ui.listeningUnavailable
+      ? "4択を作るには単語が2つ以上必要です。他の出題形式をお試しください。"
       : ui.reviewMode === "all"
       ? "デッキに単語がありません。"
       : "覚えていない単語はありません。";
@@ -346,15 +354,75 @@ function showCurrentCard() {
 
 function setupQuizCard(card) {
   const quizPrompt = document.getElementById("quizPrompt");
+  const quizPlayBtn = document.getElementById("quizPlayBtn");
   const quizInput = document.getElementById("quizInput");
+  const quizChoices = document.getElementById("quizChoices");
   const quizFeedback = document.getElementById("quizFeedback");
+  const quizCheckBtn = document.getElementById("quizCheckBtn");
+  const quizNextBtn = document.getElementById("quizNextBtn");
+
+  quizFeedback.classList.add("hidden");
+  quizNextBtn.classList.add("hidden");
+
+  const isListening = ui.quizMode === "listening";
+  quizPrompt.classList.toggle("hidden", isListening);
+  quizPlayBtn.classList.toggle("hidden", !isListening);
+  quizInput.classList.toggle("hidden", isListening);
+  quizChoices.classList.toggle("hidden", !isListening);
+  quizCheckBtn.classList.toggle("hidden", isListening);
+
+  if (isListening) {
+    setupListeningChoices(card);
+    speakText(card.front);
+    return;
+  }
+
   quizPrompt.textContent = ui.quizMode === "blank" ? makeBlank(card.example, card.front) : card.back;
   quizInput.value = "";
   quizInput.disabled = false;
-  quizFeedback.classList.add("hidden");
-  document.getElementById("quizCheckBtn").classList.remove("hidden");
-  document.getElementById("quizNextBtn").classList.add("hidden");
+  quizCheckBtn.classList.remove("hidden");
   setTimeout(() => quizInput.focus(), 50);
+}
+
+function setupListeningChoices(card) {
+  const quizChoices = document.getElementById("quizChoices");
+  quizChoices.classList.remove("answered");
+  quizChoices.innerHTML = "";
+
+  const others = state.cards.filter((c) => c.deckId === card.deckId && c.id !== card.id);
+  const distractorPool = [...new Set(others.map((c) => c.back))].filter((b) => b !== card.back);
+  const distractors = distractorPool.sort(() => Math.random() - 0.5).slice(0, 3);
+  const choices = [card.back, ...distractors].sort(() => Math.random() - 0.5);
+
+  choices.forEach((choiceText) => {
+    const btn = document.createElement("button");
+    btn.className = "quiz-choice-btn";
+    btn.textContent = choiceText;
+    btn.addEventListener("click", () => selectListeningChoice(btn, choiceText, card));
+    quizChoices.appendChild(btn);
+  });
+}
+
+function selectListeningChoice(btn, choiceText, card) {
+  const quizChoices = document.getElementById("quizChoices");
+  if (quizChoices.classList.contains("answered")) return;
+  quizChoices.classList.add("answered");
+
+  const correct = choiceText === card.back;
+  card.known = correct;
+  recordReviewToday();
+  saveData(state);
+
+  Array.from(quizChoices.children).forEach((b) => {
+    b.disabled = true;
+    if (b.textContent === card.back) b.classList.add("correct");
+  });
+  if (!correct) btn.classList.add("incorrect");
+
+  const quizFeedback = document.getElementById("quizFeedback");
+  quizFeedback.textContent = correct ? "○ 正解" : `× 正しくは: ${card.back}`;
+  quizFeedback.classList.remove("hidden");
+  document.getElementById("quizNextBtn").classList.remove("hidden");
 }
 
 function checkQuizAnswer() {
@@ -398,14 +466,18 @@ cardStage.addEventListener("click", (e) => {
   updateReviewHint();
 });
 
-speakBtn.addEventListener("click", () => {
-  const card = ui.reviewQueue[ui.reviewIndex];
-  if (!card) return;
-  const utter = new SpeechSynthesisUtterance(card.front);
+function speakText(text) {
+  const utter = new SpeechSynthesisUtterance(text);
   utter.lang = "en-US";
   utter.rate = currentSpeechRate();
   speechSynthesis.cancel();
   speechSynthesis.speak(utter);
+}
+
+speakBtn.addEventListener("click", () => {
+  const card = ui.reviewQueue[ui.reviewIndex];
+  if (!card) return;
+  speakText(card.front);
 });
 
 exampleSpeakBtn.addEventListener("click", () => {
@@ -413,11 +485,13 @@ exampleSpeakBtn.addEventListener("click", () => {
   if (!card || !card.example) return;
   const englishOnly = extractEnglish(card.example);
   if (!englishOnly) return;
-  const utter = new SpeechSynthesisUtterance(englishOnly);
-  utter.lang = "en-US";
-  utter.rate = currentSpeechRate();
-  speechSynthesis.cancel();
-  speechSynthesis.speak(utter);
+  speakText(englishOnly);
+});
+
+document.getElementById("quizPlayBtn").addEventListener("click", () => {
+  const card = ui.reviewQueue[ui.reviewIndex];
+  if (!card) return;
+  speakText(card.front);
 });
 
 function answerCard(correct) {
