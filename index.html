@@ -42,8 +42,6 @@
     <div class="deck-actions">
       <button id="startReviewBtn" class="primary-btn">復習する</button>
       <button id="reviewAllBtn" class="secondary-btn">総復習</button>
-      <button id="addCardBtn" class="secondary-btn">単語を追加</button>
-      <button id="addPhotoBtn" class="secondary-btn">写真から追加</button>
       <button id="viewListBtn" class="secondary-btn">単語一覧</button>
       <button id="renameDeckBtn" class="text-btn">デッキ名を変更</button>
       <button id="deleteDeckBtn" class="text-btn danger">このデッキを削除</button>
@@ -132,7 +130,7 @@
         <button id="photoReselectBtn" class="secondary-btn">範囲を選び直す</button>
         <button id="photoRetakeBtn2" class="secondary-btn">新しく撮影</button>
       </div>
-      <button id="photoUseBtn" class="primary-btn">この内容で追加</button>
+      <button id="photoUseBtn" class="primary-btn">この内容を使う</button>
     </div>
 
     <div id="photoLoading" class="photo-step hidden">
@@ -142,6 +140,7 @@
 
   <!-- 単語一覧 -->
   <section id="screen-list" class="screen">
+    <button id="addCardBtn" class="text-btn">＋ 単語を追加</button>
     <div class="list-controls">
       <input id="listSearch" type="text" placeholder="検索" autocomplete="off" />
       <div class="list-filter">
@@ -160,7 +159,16 @@
   <!-- 単語追加/編集 -->
   <section id="screen-add" class="screen">
     <form id="cardForm" class="form">
-      <label>表（単語）</label>
+      <div class="field-label-row">
+        <label>表（単語）</label>
+        <button type="button" id="frontCameraBtn" class="field-camera-btn">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 8h3l1.5-2h7L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z" />
+            <circle cx="12" cy="13" r="3.2" />
+          </svg>
+          写真から入力
+        </button>
+      </div>
       <input id="fieldFront" type="text" required autocomplete="off" />
       <label>裏（意味）</label>
       <input id="fieldBack" type="text" required autocomplete="off" />

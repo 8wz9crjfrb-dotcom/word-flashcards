@@ -97,7 +97,6 @@ let ui = {
   flipped: false,
   editingCardId: null,
   reviewMode: "due",
-  prefillFront: null,
   listSearch: "",
   listFilter: "all",
   listSort: "added",
@@ -127,9 +126,9 @@ function showScreen(name, opts = {}) {
 }
 
 function goBack() {
-  // 例文の写真読み取り中に中断した場合、単語追加フォームの未保存入力を
+  // 単語追加フォームからの写真読み取り中に中断した場合、フォームの未保存入力を
   // 消さずに戻す（通常の navigate("add", ...) は renderAddForm でフォームをリセットしてしまう）
-  if (document.getElementById("screen-photo").classList.contains("active") && ui.photoTarget === "example") {
+  if (document.getElementById("screen-photo").classList.contains("active")) {
     resetPhotoState();
     returnToAddScreen();
     return;
@@ -228,14 +227,6 @@ document.getElementById("startReviewBtn").addEventListener("click", () => {
 document.getElementById("reviewAllBtn").addEventListener("click", () => {
   ui.reviewMode = "all";
   navigate("review", { back: true, title: currentDeck().name });
-});
-document.getElementById("addCardBtn").addEventListener("click", () => {
-  ui.editingCardId = null;
-  navigate("add", { back: true, title: "単語を追加" });
-});
-document.getElementById("addPhotoBtn").addEventListener("click", () => {
-  ui.photoTarget = "front";
-  navigate("photo", { back: true, title: "写真から追加" });
 });
 document.getElementById("viewListBtn").addEventListener("click", () => navigate("list", { back: true, title: "単語一覧" }));
 document.getElementById("renameDeckBtn").addEventListener("click", async () => {
@@ -484,6 +475,10 @@ function recordReviewToday() {
 }
 
 // ---------- 単語一覧 ----------
+document.getElementById("addCardBtn").addEventListener("click", () => {
+  ui.editingCardId = null;
+  navigate("add", { back: true, title: "単語を追加" });
+});
 const listSearchInput = document.getElementById("listSearch");
 const filterBtns = document.querySelectorAll(".filter-btn");
 const sortBtns = document.querySelectorAll(".sort-btn");
@@ -534,7 +529,7 @@ function renderList() {
   if (cards.length === 0) {
     container.innerHTML =
       allCards.length === 0
-        ? '<p class="empty-msg">まだ単語がありません。<br>「単語を追加」または「写真から追加」で登録しましょう。</p>'
+        ? '<p class="empty-msg">まだ単語がありません。<br>「＋ 単語を追加」で登録しましょう。</p>'
         : '<p class="empty-msg">該当する単語が見つかりません。</p>';
     return;
   }
@@ -620,6 +615,10 @@ const statusToggleWrap = document.getElementById("statusToggleWrap");
 const statusNotYetBtn = document.getElementById("statusNotYetBtn");
 const statusKnownBtn = document.getElementById("statusKnownBtn");
 
+document.getElementById("frontCameraBtn").addEventListener("click", () => {
+  ui.photoTarget = "front";
+  navigate("photo", { back: true, title: "写真から単語を読み取る" });
+});
 document.getElementById("exampleCameraBtn").addEventListener("click", () => {
   ui.photoTarget = "example";
   navigate("photo", { back: true, title: "写真から例文を読み取る" });
@@ -641,10 +640,6 @@ function renderAddForm() {
   } else {
     cardForm.reset();
     statusToggleWrap.classList.add("hidden");
-    if (ui.prefillFront) {
-      fieldFront.value = ui.prefillFront;
-      ui.prefillFront = null;
-    }
   }
 }
 
@@ -855,12 +850,10 @@ document.getElementById("photoUseBtn").addEventListener("click", () => {
   resetPhotoState();
   if (ui.photoTarget === "example") {
     fieldExample.value = text;
-    returnToAddScreen();
   } else {
-    ui.editingCardId = null;
-    ui.prefillFront = text;
-    navigate("add", { back: true, title: "単語を追加" });
+    fieldFront.value = text;
   }
+  returnToAddScreen();
 });
 
 // 単語追加/編集フォームから写真入力に来た場合、フォームの未保存入力を
