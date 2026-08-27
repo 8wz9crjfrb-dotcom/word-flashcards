@@ -94,6 +94,7 @@ let ui = {
   prefillFront: null,
   listSearch: "",
   listFilter: "all",
+  photoTarget: "front",
 };
 
 // ---------- ナビゲーション ----------
@@ -117,6 +118,13 @@ function showScreen(name, opts = {}) {
 }
 
 function goBack() {
+  // 例文の写真読み取り中に中断した場合、単語追加フォームの未保存入力を
+  // 消さずに戻す（通常の navigate("add", ...) は renderAddForm でフォームをリセットしてしまう）
+  if (document.getElementById("screen-photo").classList.contains("active") && ui.photoTarget === "example") {
+    resetPhotoState();
+    returnToAddScreen();
+    return;
+  }
   navStack.pop();
   const prev = navStack.pop();
   if (prev) navigate(prev.name, prev.opts);
@@ -209,6 +217,7 @@ document.getElementById("addCardBtn").addEventListener("click", () => {
   navigate("add", { back: true, title: "単語を追加" });
 });
 document.getElementById("addPhotoBtn").addEventListener("click", () => {
+  ui.photoTarget = "front";
   navigate("photo", { back: true, title: "写真から追加" });
 });
 document.getElementById("viewListBtn").addEventListener("click", () => navigate("list", { back: true, title: "単語一覧" }));
@@ -235,8 +244,10 @@ document.getElementById("deleteDeckBtn").addEventListener("click", async () => {
 const cardStage = document.getElementById("reviewCard");
 const cardInner = document.getElementById("cardInner");
 const cardFront = document.getElementById("cardFront");
-const cardBack = document.getElementById("cardBack");
+const cardBackMeaning = document.getElementById("cardBackMeaning");
+const cardBackExample = document.getElementById("cardBackExample");
 const speakBtn = document.getElementById("speakBtn");
+const exampleSpeakBtn = document.getElementById("exampleSpeakBtn");
 const reviewButtons = document.getElementById("reviewButtons");
 const reviewDone = document.getElementById("reviewDone");
 const reviewProgress = document.getElementById("reviewProgress");
@@ -284,16 +295,18 @@ function showCurrentCard() {
 
   const card = ui.reviewQueue[ui.reviewIndex];
   cardFront.textContent = card.front;
-  cardBack.textContent = card.back + (card.example ? "\n\n例文: " + card.example : "");
-  cardBack.style.whiteSpace = "pre-line";
+  cardBackMeaning.textContent = card.back;
+  cardBackExample.textContent = card.example || "";
+  cardBackExample.classList.toggle("hidden", !card.example);
   reviewProgress.textContent = `${ui.reviewIndex + 1} / ${ui.reviewQueue.length}`;
   speakBtn.classList.toggle("hidden", !isEnglishText(card.front));
+  exampleSpeakBtn.classList.toggle("hidden", !isEnglishText(card.example || ""));
 }
 
 document.getElementById("reviewDoneBackBtn").addEventListener("click", () => goBack());
 
 cardStage.addEventListener("click", (e) => {
-  if (speakBtn.contains(e.target)) return;
+  if (speakBtn.contains(e.target) || exampleSpeakBtn.contains(e.target)) return;
   ui.flipped = !ui.flipped;
   cardInner.classList.toggle("flipped", ui.flipped);
   reviewButtons.classList.toggle("answer-hidden", !ui.flipped);
@@ -304,6 +317,15 @@ speakBtn.addEventListener("click", () => {
   const card = ui.reviewQueue[ui.reviewIndex];
   if (!card) return;
   const utter = new SpeechSynthesisUtterance(card.front);
+  utter.lang = "en-US";
+  speechSynthesis.cancel();
+  speechSynthesis.speak(utter);
+});
+
+exampleSpeakBtn.addEventListener("click", () => {
+  const card = ui.reviewQueue[ui.reviewIndex];
+  if (!card || !card.example) return;
+  const utter = new SpeechSynthesisUtterance(card.example);
   utter.lang = "en-US";
   speechSynthesis.cancel();
   speechSynthesis.speak(utter);
@@ -492,6 +514,11 @@ const statusToggleWrap = document.getElementById("statusToggleWrap");
 const statusNotYetBtn = document.getElementById("statusNotYetBtn");
 const statusKnownBtn = document.getElementById("statusKnownBtn");
 
+document.getElementById("exampleCameraBtn").addEventListener("click", () => {
+  ui.photoTarget = "example";
+  navigate("photo", { back: true, title: "写真から例文を読み取る" });
+});
+
 function updateStatusToggleUI(card) {
   statusNotYetBtn.classList.toggle("active", !card.known);
   statusKnownBtn.classList.toggle("active", card.known);
@@ -676,7 +703,8 @@ document.getElementById("photoRecognizeBtn").addEventListener("click", async () 
   try {
     await loadTesseract();
     const { data } = await Tesseract.recognize(canvas, "eng");
-    const text = data.text.trim().split(/\s+/)[0] || "";
+    const raw = data.text.trim();
+    const text = ui.photoTarget === "example" ? raw : raw.split(/\s+/)[0] || "";
     photoResultField.value = text;
     showPhotoStep("result");
   } catch (err) {
@@ -688,11 +716,25 @@ document.getElementById("photoRecognizeBtn").addEventListener("click", async () 
 document.getElementById("photoUseBtn").addEventListener("click", () => {
   const text = photoResultField.value.trim();
   if (!text) return;
-  ui.editingCardId = null;
-  ui.prefillFront = text;
   resetPhotoState();
-  navigate("add", { back: true, title: "単語を追加" });
+  if (ui.photoTarget === "example") {
+    fieldExample.value = text;
+    returnToAddScreen();
+  } else {
+    ui.editingCardId = null;
+    ui.prefillFront = text;
+    navigate("add", { back: true, title: "単語を追加" });
+  }
 });
+
+// 単語追加/編集フォームから写真入力に来た場合、フォームの未保存入力を
+// 消さずに戻るため navigate()（renderAddForm を呼び直す）を経由しない
+function returnToAddScreen() {
+  navStack.pop();
+  const addEntry = navStack[navStack.length - 1];
+  const opts = addEntry ? addEntry.opts : { back: true, title: "単語を追加" };
+  showScreen("add", { ...opts, silent: true });
+}
 
 // ---------- 統計 ----------
 function renderStats() {
@@ -777,29 +819,31 @@ function escapeHtml(str) {
   return div.innerHTML;
 }
 
-// ---------- ダークモード切り替え ----------
-const themeToggle = document.getElementById("themeToggle");
+// ---------- 表示モード切り替え（デフォルトはライト） ----------
+const themeLightBtn = document.getElementById("themeLightBtn");
+const themeDarkBtn = document.getElementById("themeDarkBtn");
 
 function currentTheme() {
-  const stored = localStorage.getItem("theme");
-  if (stored) return stored;
-  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  return localStorage.getItem("theme") || "light";
 }
 
 function updateThemeToggleUI() {
-  themeToggle.classList.toggle("on", currentTheme() === "dark");
+  const theme = currentTheme();
+  themeLightBtn.classList.toggle("active", theme === "light");
+  themeDarkBtn.classList.toggle("active", theme === "dark");
 }
 
-const storedTheme = localStorage.getItem("theme");
-if (storedTheme) document.documentElement.setAttribute("data-theme", storedTheme);
+function setTheme(theme) {
+  localStorage.setItem("theme", theme);
+  document.documentElement.setAttribute("data-theme", theme);
+  updateThemeToggleUI();
+}
+
+document.documentElement.setAttribute("data-theme", currentTheme());
 updateThemeToggleUI();
 
-themeToggle.addEventListener("click", () => {
-  const next = currentTheme() === "dark" ? "light" : "dark";
-  localStorage.setItem("theme", next);
-  document.documentElement.setAttribute("data-theme", next);
-  updateThemeToggleUI();
-});
+themeLightBtn.addEventListener("click", () => setTheme("light"));
+themeDarkBtn.addEventListener("click", () => setTheme("dark"));
 
 // ---------- 初期化 ----------
 navigate("home");

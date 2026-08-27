@@ -4,17 +4,7 @@
   --gray: #888888;
   --line: #dddddd;
   --danger: #aa0000;
-  color-scheme: light dark;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --black: #ffffff;
-    --white: #121212;
-    --gray: #999999;
-    --line: #333333;
-    --danger: #ff6b6b;
-  }
+  color-scheme: light;
 }
 
 :root[data-theme="dark"] {
@@ -24,10 +14,6 @@
   --line: #333333;
   --danger: #ff6b6b;
   color-scheme: dark;
-}
-
-:root[data-theme="light"] {
-  color-scheme: light;
 }
 
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -85,27 +71,18 @@ body {
   cursor: pointer;
 }
 
-.theme-toggle {
-  width: 42px;
-  height: 25px;
-  border-radius: 13px;
+.theme-toggle { display: flex; gap: 8px; }
+.theme-toggle-btn {
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
   border: 1.5px solid var(--black);
   background: var(--white);
-  padding: 2px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
+  color: var(--black);
 }
-
-.theme-toggle-knob {
-  width: 17px;
-  height: 17px;
-  border-radius: 50%;
-  background: var(--black);
-  transition: transform 0.2s ease;
-}
-
-.theme-toggle.on .theme-toggle-knob { transform: translateX(17px); }
+.theme-toggle-btn.active { background: var(--black); color: var(--white); }
 
 .hidden { display: none !important; }
 
@@ -238,6 +215,25 @@ body {
 
 .card-face-text.card-back-text { font-size: 20px; font-weight: 400; }
 
+.card-back-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  max-height: 100%;
+  overflow-y: auto;
+}
+.card-back-content .card-face-text { max-height: none; overflow-y: visible; }
+.card-example-text {
+  font-size: 15px;
+  color: var(--gray);
+  text-align: center;
+  line-height: 1.6;
+  white-space: pre-line;
+  word-break: break-word;
+}
+
 .speak-btn {
   position: absolute;
   top: 14px;
@@ -357,6 +353,20 @@ body {
 }
 .form input:focus, .form textarea:focus { outline: none; }
 .form .primary-btn { margin-top: 28px; }
+
+.field-label-row { display: flex; align-items: center; justify-content: space-between; margin-top: 12px; }
+.field-label-row label { margin-top: 0; }
+.field-camera-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: none;
+  border: none;
+  color: var(--black);
+  font-size: 12px;
+  cursor: pointer;
+  padding: 4px 2px;
+}
 
 .status-toggle-wrap { margin-top: 12px; }
 .status-toggle { display: flex; gap: 10px; margin-top: 6px; }
