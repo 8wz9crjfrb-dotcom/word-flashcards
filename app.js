@@ -3,7 +3,14 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 
 function loadData() {
   const raw = localStorage.getItem(STORAGE_KEY);
-  if (raw) return JSON.parse(raw);
+  if (raw) {
+    const data = JSON.parse(raw);
+    data.cards.forEach((c) => {
+      if (c.known === undefined) c.known = (c.box || 1) >= 5;
+      delete c.box;
+    });
+    return data;
+  }
   const data = {
     decks: [
       { id: uid(), name: "英単語" },
@@ -81,7 +88,7 @@ document.querySelectorAll(".nav-btn").forEach((b) => {
 
 // ---------- ホーム ----------
 function pendingCount(deckId) {
-  return state.cards.filter((c) => c.deckId === deckId && (c.box || 1) < 5).length;
+  return state.cards.filter((c) => c.deckId === deckId && !c.known).length;
 }
 
 function renderHome() {
@@ -170,7 +177,7 @@ const reviewProgress = document.getElementById("reviewProgress");
 function startReview() {
   const deckId = ui.currentDeckId;
   ui.reviewQueue = state.cards
-    .filter((c) => c.deckId === deckId && (ui.reviewMode === "all" || (c.box || 1) < 5))
+    .filter((c) => c.deckId === deckId && (ui.reviewMode === "all" || !c.known))
     .sort(() => Math.random() - 0.5);
   ui.reviewIndex = 0;
   reviewDone.classList.add("hidden");
@@ -229,11 +236,7 @@ speakBtn.addEventListener("click", () => {
 
 function answerCard(correct) {
   const card = ui.reviewQueue[ui.reviewIndex];
-  if (correct) {
-    card.box = Math.min((card.box || 1) + 1, 5);
-  } else {
-    card.box = 1;
-  }
+  card.known = correct;
   recordReviewToday();
   saveData(state);
   ui.reviewIndex++;
@@ -332,9 +335,8 @@ const statusNotYetBtn = document.getElementById("statusNotYetBtn");
 const statusKnownBtn = document.getElementById("statusKnownBtn");
 
 function updateStatusToggleUI(card) {
-  const known = (card.box || 1) >= 5;
-  statusNotYetBtn.classList.toggle("active", !known);
-  statusKnownBtn.classList.toggle("active", known);
+  statusNotYetBtn.classList.toggle("active", !card.known);
+  statusKnownBtn.classList.toggle("active", card.known);
 }
 
 function renderAddForm() {
@@ -353,14 +355,14 @@ function renderAddForm() {
 
 statusNotYetBtn.addEventListener("click", () => {
   const card = state.cards.find((c) => c.id === ui.editingCardId);
-  card.box = 1;
+  card.known = false;
   saveData(state);
   updateStatusToggleUI(card);
 });
 
 statusKnownBtn.addEventListener("click", () => {
   const card = state.cards.find((c) => c.id === ui.editingCardId);
-  card.box = 5;
+  card.known = true;
   saveData(state);
   updateStatusToggleUI(card);
 });
@@ -384,7 +386,7 @@ cardForm.addEventListener("submit", (e) => {
       front,
       back,
       example,
-      box: 1,
+      known: false,
       createdAt: Date.now(),
     });
   }
@@ -397,7 +399,7 @@ cardForm.addEventListener("submit", (e) => {
 function renderStats() {
   const body = document.getElementById("statsBody");
   const totalCards = state.cards.length;
-  const mastered = state.cards.filter((c) => (c.box || 1) >= 5).length;
+  const mastered = state.cards.filter((c) => c.known).length;
   const percent = totalCards > 0 ? Math.round((mastered / totalCards) * 100) : 0;
   document.getElementById("gaugeFill").style.width = percent + "%";
   document.getElementById("gaugePercent").textContent = percent + "%";
@@ -405,7 +407,7 @@ function renderStats() {
   const rows = [
     ["現在の連続日数", `${state.stats.streak}日`],
     ["総単語数", `${totalCards}語`],
-    ["完全に覚えた語", `${mastered}語`],
+    ["覚えた語", `${mastered}語`],
   ];
   body.innerHTML = rows
     .map(([label, value]) => `<div class="stat-row"><span>${label}</span><span class="stat-value">${value}</span></div>`)
