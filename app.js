@@ -276,10 +276,15 @@ cardStage.addEventListener("touchend", (e) => {
   }
 });
 
+function jstDateString(timestamp) {
+  const jst = new Date(timestamp + 9 * 60 * 60 * 1000);
+  return `${jst.getUTCFullYear()}-${jst.getUTCMonth() + 1}-${jst.getUTCDate()}`;
+}
+
 function recordReviewToday() {
-  const today = new Date().toDateString();
+  const today = jstDateString(Date.now());
   if (state.stats.lastReviewDate === today) return;
-  const yesterday = new Date(Date.now() - DAY_MS).toDateString();
+  const yesterday = jstDateString(Date.now() - DAY_MS);
   if (state.stats.lastReviewDate === yesterday) {
     state.stats.streak++;
   } else {
