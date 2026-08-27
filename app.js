@@ -952,7 +952,7 @@ const speechRateNormalBtn = document.getElementById("speechRateNormalBtn");
 const speechRateSlowBtn = document.getElementById("speechRateSlowBtn");
 
 function currentSpeechRate() {
-  return localStorage.getItem("speechRate") === "slow" ? 0.7 : 1;
+  return localStorage.getItem("speechRate") === "slow" ? 0.6 : 1;
 }
 
 function updateSpeechRateUI() {
