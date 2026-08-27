@@ -32,6 +32,13 @@
 
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
+button {
+  -webkit-appearance: none;
+  appearance: none;
+  font-family: inherit;
+  margin: 0;
+}
+
 html, body {
   margin: 0;
   padding: 0;
