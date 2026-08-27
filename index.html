@@ -217,6 +217,14 @@
       </div>
     </div>
 
+    <div class="settings-block">
+      <label>読み上げ速度</label>
+      <div class="theme-toggle">
+        <button id="speechRateNormalBtn" class="theme-toggle-btn">通常</button>
+        <button id="speechRateSlowBtn" class="theme-toggle-btn">ゆっくり</button>
+      </div>
+    </div>
+
     <div class="settings-block backup-block">
       <label>バックアップ</label>
       <div class="backup-actions">
@@ -225,6 +233,36 @@
       </div>
       <input id="importInput" class="hidden" type="file" accept="application/json" />
       <p class="hint">読み込みは今あるデータに追加されます（上書きはされません）</p>
+    </div>
+
+    <div class="settings-block">
+      <button id="helpBtn" class="secondary-btn">使い方を見る</button>
+    </div>
+  </section>
+
+  <!-- 使い方 -->
+  <section id="screen-help" class="screen">
+    <div class="help-section">
+      <h3>出題形式</h3>
+      <p><strong>カード</strong>：タップして裏返し、答え合わせをします。</p>
+      <p><strong>タイピング</strong>：意味を見て英単語を入力します。</p>
+      <p><strong>穴埋め</strong>：例文中の単語部分が空欄になり、文脈から思い出して入力します（例文が登録されている単語のみ対象）。</p>
+    </div>
+    <div class="help-section">
+      <h3>復習する／総復習</h3>
+      <p>「復習する」はまだ覚えていない単語だけ、「総復習」はデッキ内すべての単語が対象です。</p>
+    </div>
+    <div class="help-section">
+      <h3>写真から入力</h3>
+      <p>単語一覧の「＋ 単語を追加」を開くと、「表」「例文」それぞれの横にカメラボタンがあります。撮影して範囲を選ぶと、その部分の文字を読み取って入力できます（英語のみ対応）。</p>
+    </div>
+    <div class="help-section">
+      <h3>単語一覧</h3>
+      <p>検索・絞り込み・並び替えができます。単語を左にスワイプすると削除ボタンが出ます。</p>
+    </div>
+    <div class="help-section">
+      <h3>バックアップ</h3>
+      <p>設定画面から全データを書き出し・読み込みできます。読み込みは今あるデータに追加され、上書きはされません。</p>
     </div>
   </section>
 

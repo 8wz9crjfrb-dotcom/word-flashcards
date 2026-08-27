@@ -534,6 +534,12 @@ body {
 .backup-actions { display: flex; gap: 12px; margin-top: 8px; }
 .backup-actions button { flex: 1; }
 
+/* 使い方 */
+.help-section { margin-bottom: 28px; }
+.help-section h3 { font-size: 15px; margin: 0 0 10px; }
+.help-section p { font-size: 14px; color: var(--gray); line-height: 1.7; margin: 0 0 8px; }
+.help-section p strong { color: var(--black); }
+
 /* ボトムナビ */
 .bottombar {
   display: flex;

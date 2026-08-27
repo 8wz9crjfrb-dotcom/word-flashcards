@@ -402,6 +402,7 @@ speakBtn.addEventListener("click", () => {
   if (!card) return;
   const utter = new SpeechSynthesisUtterance(card.front);
   utter.lang = "en-US";
+  utter.rate = currentSpeechRate();
   speechSynthesis.cancel();
   speechSynthesis.speak(utter);
 });
@@ -413,6 +414,7 @@ exampleSpeakBtn.addEventListener("click", () => {
   if (!englishOnly) return;
   const utter = new SpeechSynthesisUtterance(englishOnly);
   utter.lang = "en-US";
+  utter.rate = currentSpeechRate();
   speechSynthesis.cancel();
   speechSynthesis.speak(utter);
 });
@@ -975,6 +977,34 @@ updateThemeToggleUI();
 
 themeLightBtn.addEventListener("click", () => setTheme("light"));
 themeDarkBtn.addEventListener("click", () => setTheme("dark"));
+
+// ---------- 読み上げ速度（デフォルトは通常） ----------
+const speechRateNormalBtn = document.getElementById("speechRateNormalBtn");
+const speechRateSlowBtn = document.getElementById("speechRateSlowBtn");
+
+function currentSpeechRate() {
+  return localStorage.getItem("speechRate") === "slow" ? 0.7 : 1;
+}
+
+function updateSpeechRateUI() {
+  const slow = localStorage.getItem("speechRate") === "slow";
+  speechRateNormalBtn.classList.toggle("active", !slow);
+  speechRateSlowBtn.classList.toggle("active", slow);
+}
+
+function setSpeechRate(rate) {
+  localStorage.setItem("speechRate", rate);
+  updateSpeechRateUI();
+}
+
+updateSpeechRateUI();
+speechRateNormalBtn.addEventListener("click", () => setSpeechRate("normal"));
+speechRateSlowBtn.addEventListener("click", () => setSpeechRate("slow"));
+
+// ---------- 使い方 ----------
+document.getElementById("helpBtn").addEventListener("click", () => {
+  navigate("help", { back: true, title: "使い方" });
+});
 
 // ---------- 初期化 ----------
 navigate("home");
