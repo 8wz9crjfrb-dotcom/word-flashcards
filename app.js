@@ -43,6 +43,8 @@ let ui = {
   editingCardId: null,
   reviewMode: "due",
   prefillFront: null,
+  listSearch: "",
+  listFilter: "all",
 };
 
 // ---------- ナビゲーション ----------
@@ -301,13 +303,41 @@ function recordReviewToday() {
 }
 
 // ---------- 単語一覧 ----------
+const listSearchInput = document.getElementById("listSearch");
+const filterBtns = document.querySelectorAll(".filter-btn");
+
+listSearchInput.addEventListener("input", () => {
+  ui.listSearch = listSearchInput.value;
+  renderList();
+});
+
+filterBtns.forEach((btn) => {
+  btn.addEventListener("click", () => {
+    ui.listFilter = btn.dataset.filter;
+    filterBtns.forEach((b) => b.classList.toggle("active", b === btn));
+    renderList();
+  });
+});
+
 function renderList() {
   const deck = currentDeck();
   const container = document.getElementById("cardTable");
-  const cards = state.cards.filter((c) => c.deckId === deck.id);
+  listSearchInput.value = ui.listSearch;
+  filterBtns.forEach((b) => b.classList.toggle("active", b.dataset.filter === ui.listFilter));
+
+  let cards = state.cards.filter((c) => c.deckId === deck.id);
+  if (ui.listFilter === "known") cards = cards.filter((c) => c.known);
+  if (ui.listFilter === "unknown") cards = cards.filter((c) => !c.known);
+  const query = ui.listSearch.trim().toLowerCase();
+  if (query) {
+    cards = cards.filter(
+      (c) => c.front.toLowerCase().includes(query) || c.back.toLowerCase().includes(query)
+    );
+  }
+
   container.innerHTML = "";
   if (cards.length === 0) {
-    container.innerHTML = '<p class="empty-msg">まだ単語がありません</p>';
+    container.innerHTML = '<p class="empty-msg">該当する単語がありません</p>';
     return;
   }
   cards.forEach((card) => {
@@ -566,6 +596,64 @@ function renderStats() {
     .map(([label, value]) => `<div class="stat-row"><span>${label}</span><span class="stat-value">${value}</span></div>`)
     .join("");
 }
+
+// ---------- バックアップ ----------
+document.getElementById("exportBtn").addEventListener("click", () => {
+  const payload = { decks: state.decks, cards: state.cards, exportedAt: Date.now() };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const dateStr = new Date().toISOString().slice(0, 10);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `単語帳バックアップ_${dateStr}.json`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+});
+
+const importInput = document.getElementById("importInput");
+document.getElementById("importBtn").addEventListener("click", () => importInput.click());
+
+importInput.addEventListener("change", () => {
+  const file = importInput.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const imported = JSON.parse(reader.result);
+      if (!Array.isArray(imported.decks) || !Array.isArray(imported.cards)) {
+        throw new Error("invalid format");
+      }
+      const idMap = {};
+      imported.decks.forEach((d) => {
+        const newId = uid();
+        idMap[d.id] = newId;
+        state.decks.push({ id: newId, name: d.name || "デッキ" });
+      });
+      imported.cards.forEach((c) => {
+        const newDeckId = idMap[c.deckId];
+        if (!newDeckId || !c.front || !c.back) return;
+        state.cards.push({
+          id: uid(),
+          deckId: newDeckId,
+          front: c.front,
+          back: c.back,
+          example: c.example || "",
+          known: !!c.known,
+          createdAt: c.createdAt || Date.now(),
+        });
+      });
+      saveData(state);
+      alert(`${imported.decks.length}デッキ・${imported.cards.length}単語を読み込みました`);
+      renderStats();
+    } catch (err) {
+      alert("読み込みに失敗しました。正しいバックアップファイルか確認してください。");
+    }
+    importInput.value = "";
+  };
+  reader.readAsText(file);
+});
 
 function escapeHtml(str) {
   const div = document.createElement("div");

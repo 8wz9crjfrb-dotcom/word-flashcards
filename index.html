@@ -116,6 +116,14 @@
 
   <!-- 単語一覧 -->
   <section id="screen-list" class="screen">
+    <div class="list-controls">
+      <input id="listSearch" type="text" placeholder="検索" autocomplete="off" />
+      <div class="list-filter">
+        <button class="filter-btn active" data-filter="all">すべて</button>
+        <button class="filter-btn" data-filter="unknown">まだ</button>
+        <button class="filter-btn" data-filter="known">覚えた</button>
+      </div>
+    </div>
     <div id="cardTable" class="card-table"></div>
   </section>
 
@@ -150,6 +158,16 @@
       <p id="gaugeSub" class="gauge-sub"></p>
     </div>
     <div id="statsBody" class="stats-body"></div>
+
+    <div class="backup-block">
+      <label>バックアップ</label>
+      <div class="backup-actions">
+        <button id="exportBtn" class="secondary-btn">書き出す</button>
+        <button id="importBtn" class="secondary-btn">読み込む</button>
+      </div>
+      <input id="importInput" class="hidden" type="file" accept="application/json" />
+      <p class="hint">読み込みは今あるデータに追加されます（上書きはされません）</p>
+    </div>
   </section>
 
 </main>

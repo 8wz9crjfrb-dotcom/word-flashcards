@@ -267,6 +267,32 @@ body {
 .review-done p { font-size: 16px; margin-bottom: 20px; }
 
 /* 単語一覧 */
+.list-controls { margin-bottom: 8px; }
+.list-controls input {
+  width: 100%;
+  border: none;
+  border-bottom: 1.5px solid var(--black);
+  padding: 10px 2px;
+  font-size: 16px;
+  font-family: inherit;
+  background: transparent;
+  color: var(--black);
+}
+.list-controls input:focus { outline: none; }
+.list-filter { display: flex; gap: 8px; margin-top: 12px; }
+.filter-btn {
+  flex: 1;
+  padding: 8px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1.5px solid var(--black);
+  background: var(--white);
+  color: var(--black);
+}
+.filter-btn.active { background: var(--black); color: var(--white); }
+
 .card-table { display: flex; flex-direction: column; }
 .card-item {
   border-bottom: 1px solid var(--line);
@@ -390,6 +416,11 @@ body {
   font-size: 15px;
 }
 .stat-row .stat-value { font-weight: 700; }
+
+.backup-block { margin-top: 32px; }
+.backup-block > label { font-size: 13px; color: var(--gray); }
+.backup-actions { display: flex; gap: 12px; margin-top: 8px; }
+.backup-actions button { flex: 1; }
 
 /* ボトムナビ */
 .bottombar {
