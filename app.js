@@ -333,6 +333,7 @@ function showCurrentCard() {
   quizStageEl.classList.add("hidden");
   cardStageEl.classList.remove("hidden");
   reviewHint.classList.remove("hidden");
+  reviewButtons.classList.remove("hidden");
   updateReviewHint();
 
   cardFront.textContent = card.front;
