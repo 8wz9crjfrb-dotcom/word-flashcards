@@ -386,6 +386,30 @@ function escapeHtml(str) {
   return div.innerHTML;
 }
 
+// ---------- ダークモード切り替え ----------
+const themeToggle = document.getElementById("themeToggle");
+
+function currentTheme() {
+  const stored = localStorage.getItem("theme");
+  if (stored) return stored;
+  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+}
+
+function updateThemeToggleUI() {
+  themeToggle.classList.toggle("on", currentTheme() === "dark");
+}
+
+const storedTheme = localStorage.getItem("theme");
+if (storedTheme) document.documentElement.setAttribute("data-theme", storedTheme);
+updateThemeToggleUI();
+
+themeToggle.addEventListener("click", () => {
+  const next = currentTheme() === "dark" ? "light" : "dark";
+  localStorage.setItem("theme", next);
+  document.documentElement.setAttribute("data-theme", next);
+  updateThemeToggleUI();
+});
+
 // ---------- 初期化 ----------
 navigate("home");
 
