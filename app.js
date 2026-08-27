@@ -8,6 +8,7 @@ function loadData() {
     data.cards.forEach((c) => {
       if (c.known === undefined) c.known = (c.box || 1) >= 5;
       delete c.box;
+      if (c.knownAt === undefined) c.knownAt = c.known ? Date.now() : null;
     });
     return data;
   }
@@ -304,6 +305,7 @@ speakBtn.addEventListener("click", () => {
 function answerCard(correct) {
   const card = ui.reviewQueue[ui.reviewIndex];
   card.known = correct;
+  card.knownAt = correct ? Date.now() : null;
   recordReviewToday();
   saveData(state);
   ui.reviewIndex++;
@@ -510,6 +512,7 @@ function renderAddForm() {
 statusNotYetBtn.addEventListener("click", () => {
   const card = state.cards.find((c) => c.id === ui.editingCardId);
   card.known = false;
+  card.knownAt = null;
   saveData(state);
   updateStatusToggleUI(card);
 });
@@ -517,6 +520,7 @@ statusNotYetBtn.addEventListener("click", () => {
 statusKnownBtn.addEventListener("click", () => {
   const card = state.cards.find((c) => c.id === ui.editingCardId);
   card.known = true;
+  card.knownAt = Date.now();
   saveData(state);
   updateStatusToggleUI(card);
 });
@@ -541,6 +545,7 @@ cardForm.addEventListener("submit", (e) => {
       back,
       example,
       known: false,
+      knownAt: null,
       createdAt: Date.now(),
     });
   }
@@ -703,6 +708,37 @@ function renderStats() {
   body.innerHTML = rows
     .map(([label, value]) => `<div class="stat-row"><span>${label}</span><span class="stat-value">${value}</span></div>`)
     .join("");
+
+  renderLearningChart();
+}
+
+function renderLearningChart() {
+  const DAYS = 14;
+  const now = Date.now();
+  const buckets = [];
+  for (let i = DAYS - 1; i >= 0; i--) {
+    buckets.push({ date: jstDateString(now - i * DAY_MS), count: 0 });
+  }
+  const bucketMap = new Map(buckets.map((b) => [b.date, b]));
+  state.cards.forEach((c) => {
+    if (!c.knownAt) return;
+    const bucket = bucketMap.get(jstDateString(c.knownAt));
+    if (bucket) bucket.count++;
+  });
+  const max = Math.max(1, ...buckets.map((b) => b.count));
+  const total = buckets.reduce((sum, b) => sum + b.count, 0);
+  document.getElementById("chartLabel").textContent = `学習の推移（直近${DAYS}日・計${total}語）`;
+  document.getElementById("learningChart").innerHTML = buckets
+    .map((b) => {
+      const heightPct = Math.round((b.count / max) * 100);
+      const day = b.date.split("-")[2];
+      return `
+        <div class="chart-col">
+          <div class="chart-bar-wrap"><div class="chart-bar" style="height:${heightPct}%"></div></div>
+          <div class="chart-label">${day}</div>
+        </div>`;
+    })
+    .join("");
 }
 
 // ---------- バックアップ ----------
@@ -749,6 +785,7 @@ importInput.addEventListener("change", () => {
           back: c.back,
           example: c.example || "",
           known: !!c.known,
+          knownAt: c.knownAt || (c.known ? Date.now() : null),
           createdAt: c.createdAt || Date.now(),
         });
       });
