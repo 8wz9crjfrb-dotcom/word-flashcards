@@ -322,6 +322,38 @@ body {
 }
 .status-toggle-btn.active { background: var(--black); color: var(--white); }
 
+/* 写真から追加 */
+.photo-step { display: flex; flex-direction: column; gap: 14px; }
+.photo-stage {
+  position: relative;
+  width: 100%;
+  border: 1.5px solid var(--line);
+  border-radius: 12px;
+  overflow: hidden;
+  touch-action: none;
+  user-select: none;
+}
+.photo-stage img { display: block; width: 100%; height: auto; }
+.selection-box {
+  position: absolute;
+  border: 2px dashed var(--black);
+  background: rgba(128, 128, 128, 0.2);
+  pointer-events: none;
+}
+.photo-actions { display: flex; gap: 12px; }
+.photo-actions button { flex: 1; }
+#photoResultField {
+  border: none;
+  border-bottom: 1.5px solid var(--black);
+  padding: 10px 2px;
+  font-size: 16px;
+  font-family: inherit;
+  background: transparent;
+  color: var(--black);
+  margin-top: 6px;
+}
+#photoResultField:focus { outline: none; }
+
 /* 統計 */
 .gauge-block { margin-bottom: 28px; }
 .gauge-label {

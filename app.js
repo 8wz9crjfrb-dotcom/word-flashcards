@@ -42,6 +42,7 @@ let ui = {
   flipped: false,
   editingCardId: null,
   reviewMode: "due",
+  prefillFront: null,
 };
 
 // ---------- ナビゲーション ----------
@@ -69,11 +70,14 @@ function goBack() {
 }
 
 function navigate(name, opts = {}) {
+  const leavingPhoto = document.getElementById("screen-photo").classList.contains("active");
+  if (leavingPhoto && name !== "photo") resetPhotoState();
   if (name === "home") renderHome();
   if (name === "deck") renderDeck();
   if (name === "review") startReview();
   if (name === "list") renderList();
   if (name === "add") renderAddForm();
+  if (name === "photo") showPhotoStep("pick");
   if (name === "stats") renderStats();
   showScreen(name, opts);
 }
@@ -144,6 +148,9 @@ document.getElementById("reviewAllBtn").addEventListener("click", () => {
 document.getElementById("addCardBtn").addEventListener("click", () => {
   ui.editingCardId = null;
   navigate("add", { back: true, title: "単語を追加" });
+});
+document.getElementById("addPhotoBtn").addEventListener("click", () => {
+  navigate("photo", { back: true, title: "写真から追加" });
 });
 document.getElementById("viewListBtn").addEventListener("click", () => navigate("list", { back: true, title: "単語一覧" }));
 document.getElementById("renameDeckBtn").addEventListener("click", () => {
@@ -355,6 +362,10 @@ function renderAddForm() {
   } else {
     cardForm.reset();
     statusToggleWrap.classList.add("hidden");
+    if (ui.prefillFront) {
+      fieldFront.value = ui.prefillFront;
+      ui.prefillFront = null;
+    }
   }
 }
 
@@ -398,6 +409,138 @@ cardForm.addEventListener("submit", (e) => {
   saveData(state);
   ui.editingCardId = null;
   goBack();
+});
+
+// ---------- 写真から追加 ----------
+const photoInput = document.getElementById("photoInput");
+const photoImg = document.getElementById("photoImg");
+const photoStage = document.getElementById("photoStage");
+const selectionBox = document.getElementById("selectionBox");
+const photoResultField = document.getElementById("photoResultField");
+let currentPhotoUrl = null;
+let photoDragStart = null;
+
+function showPhotoStep(step) {
+  document.getElementById("photoPick").classList.toggle("hidden", step !== "pick");
+  document.getElementById("photoCrop").classList.toggle("hidden", step !== "crop");
+  document.getElementById("photoResult").classList.toggle("hidden", step !== "result");
+  document.getElementById("photoLoading").classList.toggle("hidden", step !== "loading");
+}
+
+function resetPhotoState() {
+  if (currentPhotoUrl) {
+    URL.revokeObjectURL(currentPhotoUrl);
+    currentPhotoUrl = null;
+  }
+  photoImg.removeAttribute("src");
+  photoInput.value = "";
+  selectionBox.classList.add("hidden");
+  photoResultField.value = "";
+}
+
+document.getElementById("photoTakeBtn").addEventListener("click", () => photoInput.click());
+
+photoInput.addEventListener("change", () => {
+  const file = photoInput.files[0];
+  if (!file) return;
+  if (currentPhotoUrl) URL.revokeObjectURL(currentPhotoUrl);
+  currentPhotoUrl = URL.createObjectURL(file);
+  photoImg.src = currentPhotoUrl;
+  selectionBox.classList.add("hidden");
+  showPhotoStep("crop");
+});
+
+function positionSelectionBox(left, top, width, height) {
+  selectionBox.style.left = left + "px";
+  selectionBox.style.top = top + "px";
+  selectionBox.style.width = width + "px";
+  selectionBox.style.height = height + "px";
+}
+
+photoStage.addEventListener("pointerdown", (e) => {
+  const rect = photoStage.getBoundingClientRect();
+  photoDragStart = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+  selectionBox.classList.remove("hidden");
+  positionSelectionBox(photoDragStart.x, photoDragStart.y, 0, 0);
+  photoStage.setPointerCapture(e.pointerId);
+});
+photoStage.addEventListener("pointermove", (e) => {
+  if (!photoDragStart) return;
+  const rect = photoStage.getBoundingClientRect();
+  const x = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
+  const y = Math.max(0, Math.min(e.clientY - rect.top, rect.height));
+  positionSelectionBox(
+    Math.min(photoDragStart.x, x),
+    Math.min(photoDragStart.y, y),
+    Math.abs(x - photoDragStart.x),
+    Math.abs(y - photoDragStart.y)
+  );
+});
+photoStage.addEventListener("pointerup", () => { photoDragStart = null; });
+photoStage.addEventListener("pointercancel", () => { photoDragStart = null; });
+
+document.getElementById("photoRetakeBtn").addEventListener("click", () => {
+  resetPhotoState();
+  showPhotoStep("pick");
+});
+document.getElementById("photoRetakeBtn2").addEventListener("click", () => {
+  resetPhotoState();
+  showPhotoStep("pick");
+});
+
+let tesseractLoadPromise = null;
+function loadTesseract() {
+  if (window.Tesseract) return Promise.resolve();
+  if (tesseractLoadPromise) return tesseractLoadPromise;
+  tesseractLoadPromise = new Promise((resolve, reject) => {
+    const script = document.createElement("script");
+    script.src = "https://cdn.jsdelivr.net/npm/tesseract.js@5.0.4/dist/tesseract.min.js";
+    script.onload = resolve;
+    script.onerror = () => reject(new Error("load failed"));
+    document.head.appendChild(script);
+  });
+  return tesseractLoadPromise;
+}
+
+document.getElementById("photoRecognizeBtn").addEventListener("click", async () => {
+  const selRect = selectionBox.getBoundingClientRect();
+  if (selRect.width < 4 || selRect.height < 4) {
+    alert("範囲を選択してください");
+    return;
+  }
+  const imgRect = photoImg.getBoundingClientRect();
+  const scaleX = photoImg.naturalWidth / imgRect.width;
+  const scaleY = photoImg.naturalHeight / imgRect.height;
+  const sx = (selRect.left - imgRect.left) * scaleX;
+  const sy = (selRect.top - imgRect.top) * scaleY;
+  const sw = selRect.width * scaleX;
+  const sh = selRect.height * scaleY;
+
+  const canvas = document.createElement("canvas");
+  canvas.width = sw;
+  canvas.height = sh;
+  canvas.getContext("2d").drawImage(photoImg, sx, sy, sw, sh, 0, 0, sw, sh);
+
+  showPhotoStep("loading");
+  try {
+    await loadTesseract();
+    const { data } = await Tesseract.recognize(canvas, "eng");
+    const text = data.text.trim().split(/\s+/)[0] || "";
+    photoResultField.value = text;
+    showPhotoStep("result");
+  } catch (err) {
+    alert("文字の読み取りに失敗しました。もう一度お試しください。");
+    showPhotoStep("crop");
+  }
+});
+
+document.getElementById("photoUseBtn").addEventListener("click", () => {
+  const text = photoResultField.value.trim();
+  if (!text) return;
+  ui.editingCardId = null;
+  ui.prefillFront = text;
+  resetPhotoState();
+  navigate("add", { back: true, title: "単語を追加" });
 });
 
 // ---------- 統計 ----------

@@ -38,6 +38,7 @@
       <button id="startReviewBtn" class="primary-btn">復習する</button>
       <button id="reviewAllBtn" class="secondary-btn">総復習</button>
       <button id="addCardBtn" class="secondary-btn">単語を追加</button>
+      <button id="addPhotoBtn" class="secondary-btn">写真から追加</button>
       <button id="viewListBtn" class="secondary-btn">単語一覧</button>
       <button id="renameDeckBtn" class="text-btn">デッキ名を変更</button>
       <button id="deleteDeckBtn" class="text-btn danger">このデッキを削除</button>
@@ -74,6 +75,41 @@
     <div id="reviewDone" class="review-done hidden">
       <p id="reviewDoneText"></p>
       <button id="reviewDoneBackBtn" class="primary-btn">デッキ画面に戻る</button>
+    </div>
+  </section>
+
+  <!-- 写真から追加 -->
+  <section id="screen-photo" class="screen">
+    <input id="photoInput" class="hidden" type="file" accept="image/*" capture="environment" />
+
+    <div id="photoPick" class="photo-step">
+      <p class="hint">単語1つが収まるように撮影してください（英語のみ対応）</p>
+      <button id="photoTakeBtn" class="primary-btn">撮影する</button>
+    </div>
+
+    <div id="photoCrop" class="photo-step hidden">
+      <p class="hint">単語を囲むようにドラッグして範囲を選択</p>
+      <div id="photoStage" class="photo-stage">
+        <img id="photoImg" alt="" />
+        <div id="selectionBox" class="selection-box hidden"></div>
+      </div>
+      <div class="photo-actions">
+        <button id="photoRetakeBtn" class="secondary-btn">撮り直す</button>
+        <button id="photoRecognizeBtn" class="primary-btn">この範囲を読み取る</button>
+      </div>
+    </div>
+
+    <div id="photoResult" class="photo-step hidden">
+      <label>読み取り結果（編集可）</label>
+      <input id="photoResultField" type="text" autocomplete="off" />
+      <div class="photo-actions">
+        <button id="photoRetakeBtn2" class="secondary-btn">撮り直す</button>
+        <button id="photoUseBtn" class="primary-btn">この内容で追加</button>
+      </div>
+    </div>
+
+    <div id="photoLoading" class="photo-step hidden">
+      <p class="hint">読み取り中…</p>
     </div>
   </section>
 
