@@ -34,6 +34,55 @@ function isEnglishText(text) {
   return /[a-zA-Z]/.test(text) && !/[぀-ヿ㐀-鿿＀-￯]/.test(text);
 }
 
+// ---------- モーダルダイアログ ----------
+const modalOverlay = document.getElementById("modalOverlay");
+const modalMessage = document.getElementById("modalMessage");
+const modalInput = document.getElementById("modalInput");
+const modalCancelBtn = document.getElementById("modalCancelBtn");
+const modalOkBtn = document.getElementById("modalOkBtn");
+
+function showModal({ message, type = "alert", defaultValue = "" }) {
+  return new Promise((resolve) => {
+    modalMessage.textContent = message;
+    modalInput.classList.toggle("hidden", type !== "prompt");
+    modalInput.value = defaultValue;
+    modalCancelBtn.classList.toggle("hidden", type === "alert");
+    modalOverlay.classList.remove("hidden");
+    if (type === "prompt") setTimeout(() => modalInput.focus(), 50);
+
+    function cleanup(result) {
+      modalOverlay.classList.add("hidden");
+      modalOkBtn.removeEventListener("click", onOk);
+      modalCancelBtn.removeEventListener("click", onCancel);
+      modalInput.removeEventListener("keydown", onKeydown);
+      resolve(result);
+    }
+    function onOk() {
+      cleanup(type === "prompt" ? modalInput.value.trim() || null : true);
+    }
+    function onCancel() {
+      cleanup(type === "prompt" ? null : false);
+    }
+    function onKeydown(e) {
+      if (e.key === "Enter") onOk();
+    }
+
+    modalOkBtn.addEventListener("click", onOk);
+    modalCancelBtn.addEventListener("click", onCancel);
+    modalInput.addEventListener("keydown", onKeydown);
+  });
+}
+
+function showAlert(message) {
+  return showModal({ message, type: "alert" });
+}
+function showConfirm(message) {
+  return showModal({ message, type: "confirm" });
+}
+function showPrompt(message, defaultValue) {
+  return showModal({ message, type: "prompt", defaultValue });
+}
+
 let state = loadData();
 let ui = {
   currentDeckId: null,
@@ -54,8 +103,11 @@ const topTitle = document.getElementById("topTitle");
 let navStack = [];
 
 function showScreen(name, opts = {}) {
-  screens.forEach((s) => s.classList.remove("active"));
-  document.getElementById("screen-" + name).classList.add("active");
+  screens.forEach((s) => s.classList.remove("active", "fade-in"));
+  const target = document.getElementById("screen-" + name);
+  target.classList.add("active");
+  void target.offsetWidth;
+  target.classList.add("fade-in");
   topTitle.textContent = opts.title || "単語帳";
   backBtn.classList.toggle("hidden", !opts.back);
   document.querySelectorAll(".nav-btn").forEach((b) => {
@@ -101,6 +153,10 @@ function pendingCount(deckId) {
 function renderHome() {
   const list = document.getElementById("deckList");
   list.innerHTML = "";
+  if (state.decks.length === 0) {
+    list.innerHTML = '<p class="empty-msg">デッキがありません。<br>「＋ 新しいデッキ」から作成しましょう。</p>';
+    return;
+  }
   state.decks.forEach((deck) => {
     const total = state.cards.filter((c) => c.deckId === deck.id).length;
     const pending = pendingCount(deck.id);
@@ -118,10 +174,10 @@ function renderHome() {
   });
 }
 
-document.getElementById("newDeckBtn").addEventListener("click", () => {
-  const name = prompt("デッキ名を入力してください");
-  if (!name || !name.trim()) return;
-  state.decks.push({ id: uid(), name: name.trim() });
+document.getElementById("newDeckBtn").addEventListener("click", async () => {
+  const name = await showPrompt("デッキ名を入力してください");
+  if (!name) return;
+  state.decks.push({ id: uid(), name });
   saveData(state);
   renderHome();
 });
@@ -156,17 +212,18 @@ document.getElementById("addPhotoBtn").addEventListener("click", () => {
   navigate("photo", { back: true, title: "写真から追加" });
 });
 document.getElementById("viewListBtn").addEventListener("click", () => navigate("list", { back: true, title: "単語一覧" }));
-document.getElementById("renameDeckBtn").addEventListener("click", () => {
+document.getElementById("renameDeckBtn").addEventListener("click", async () => {
   const deck = currentDeck();
-  const name = prompt("新しいデッキ名を入力してください", deck.name);
-  if (!name || !name.trim()) return;
-  deck.name = name.trim();
+  const name = await showPrompt("新しいデッキ名を入力してください", deck.name);
+  if (!name) return;
+  deck.name = name;
   saveData(state);
   renderDeck();
 });
-document.getElementById("deleteDeckBtn").addEventListener("click", () => {
+document.getElementById("deleteDeckBtn").addEventListener("click", async () => {
   const deck = currentDeck();
-  if (!confirm(`「${deck.name}」を削除しますか？中の単語もすべて削除されます。`)) return;
+  const ok = await showConfirm(`「${deck.name}」を削除しますか？\n中の単語もすべて削除されます。`);
+  if (!ok) return;
   state.decks = state.decks.filter((d) => d.id !== deck.id);
   state.cards = state.cards.filter((c) => c.deckId !== deck.id);
   saveData(state);
@@ -326,7 +383,8 @@ function renderList() {
   listSearchInput.value = ui.listSearch;
   filterBtns.forEach((b) => b.classList.toggle("active", b.dataset.filter === ui.listFilter));
 
-  let cards = state.cards.filter((c) => c.deckId === deck.id);
+  const allCards = state.cards.filter((c) => c.deckId === deck.id);
+  let cards = allCards;
   if (ui.listFilter === "known") cards = cards.filter((c) => c.known);
   if (ui.listFilter === "unknown") cards = cards.filter((c) => !c.known);
   const query = ui.listSearch.trim().toLowerCase();
@@ -338,34 +396,83 @@ function renderList() {
 
   container.innerHTML = "";
   if (cards.length === 0) {
-    container.innerHTML = '<p class="empty-msg">該当する単語がありません</p>';
+    container.innerHTML =
+      allCards.length === 0
+        ? '<p class="empty-msg">まだ単語がありません。<br>「単語を追加」または「写真から追加」で登録しましょう。</p>'
+        : '<p class="empty-msg">該当する単語が見つかりません。</p>';
     return;
   }
   cards.forEach((card) => {
     const row = document.createElement("div");
     row.className = "card-item";
     row.innerHTML = `
-      <div class="card-info">
-        <div class="card-front-text">${escapeHtml(card.front)}</div>
-        <div class="card-back-text">${escapeHtml(card.back)}</div>
+      <div class="card-item-delete-bg">
+        <button class="card-item-delete-btn">削除</button>
       </div>
-      <div class="card-ops">
-        <button class="edit">編集</button>
-        <button class="del">削除</button>
+      <div class="card-item-inner">
+        <div class="card-info">
+          <div class="card-front-text">${escapeHtml(card.front)}</div>
+          <div class="card-back-text">${escapeHtml(card.back)}</div>
+        </div>
+        <button class="edit-icon-btn" aria-label="編集">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 16.5V20h3.5L18.5 9 15 5.5 4 16.5z" />
+            <path d="M13.5 7 17 10.5" />
+          </svg>
+        </button>
       </div>
     `;
-    row.querySelector(".edit").addEventListener("click", () => {
+    const inner = row.querySelector(".card-item-inner");
+    inner.querySelector(".edit-icon-btn").addEventListener("click", () => {
       ui.editingCardId = card.id;
       navigate("add", { back: true, title: "単語を編集" });
     });
-    row.querySelector(".del").addEventListener("click", () => {
-      if (!confirm(`「${card.front}」を削除しますか？`)) return;
+    row.querySelector(".card-item-delete-btn").addEventListener("click", async () => {
+      const ok = await showConfirm(`「${card.front}」を削除しますか？`);
+      if (!ok) return;
       state.cards = state.cards.filter((c) => c.id !== card.id);
       saveData(state);
       renderList();
     });
+    attachSwipeToDelete(inner);
     container.appendChild(row);
   });
+}
+
+function attachSwipeToDelete(inner) {
+  const REVEAL = 84;
+  let startX = null;
+  let dragging = false;
+
+  inner.addEventListener("pointerdown", (e) => {
+    startX = e.clientX;
+    dragging = true;
+    inner.style.transition = "none";
+    inner.setPointerCapture(e.pointerId);
+  });
+  inner.addEventListener("pointermove", (e) => {
+    if (!dragging) return;
+    const base = inner.classList.contains("swiped") ? -REVEAL : 0;
+    const dx = Math.max(-REVEAL, Math.min(0, base + (e.clientX - startX)));
+    inner.style.transform = `translateX(${dx}px)`;
+  });
+  function end(e) {
+    if (!dragging) return;
+    dragging = false;
+    inner.style.transition = "";
+    inner.style.transform = "";
+    const wasSwiped = inner.classList.contains("swiped");
+    const dx = e.clientX - startX;
+    const nowSwiped = wasSwiped ? dx <= -40 : dx < -40;
+    if (nowSwiped) {
+      document.querySelectorAll(".card-item-inner.swiped").forEach((el) => {
+        if (el !== inner) el.classList.remove("swiped");
+      });
+    }
+    inner.classList.toggle("swiped", nowSwiped);
+  }
+  inner.addEventListener("pointerup", end);
+  inner.addEventListener("pointercancel", end);
 }
 
 // ---------- 追加/編集フォーム ----------
@@ -541,7 +648,7 @@ function loadTesseract() {
 document.getElementById("photoRecognizeBtn").addEventListener("click", async () => {
   const selRect = selectionBox.getBoundingClientRect();
   if (selRect.width < 4 || selRect.height < 4) {
-    alert("範囲を選択してください");
+    await showAlert("範囲を選択してください");
     return;
   }
   const imgRect = photoImg.getBoundingClientRect();
@@ -565,7 +672,7 @@ document.getElementById("photoRecognizeBtn").addEventListener("click", async () 
     photoResultField.value = text;
     showPhotoStep("result");
   } catch (err) {
-    alert("文字の読み取りに失敗しました。もう一度お試しください。");
+    await showAlert("文字の読み取りに失敗しました。もう一度お試しください。");
     showPhotoStep("crop");
   }
 });
@@ -620,7 +727,7 @@ importInput.addEventListener("change", () => {
   const file = importInput.files[0];
   if (!file) return;
   const reader = new FileReader();
-  reader.onload = () => {
+  reader.onload = async () => {
     try {
       const imported = JSON.parse(reader.result);
       if (!Array.isArray(imported.decks) || !Array.isArray(imported.cards)) {
@@ -646,10 +753,10 @@ importInput.addEventListener("change", () => {
         });
       });
       saveData(state);
-      alert(`${imported.decks.length}デッキ・${imported.cards.length}単語を読み込みました`);
       renderStats();
+      await showAlert(`${imported.decks.length}デッキ・${imported.cards.length}単語を読み込みました`);
     } catch (err) {
-      alert("読み込みに失敗しました。正しいバックアップファイルか確認してください。");
+      await showAlert("読み込みに失敗しました。正しいバックアップファイルか確認してください。");
     }
     importInput.value = "";
   };

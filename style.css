@@ -297,28 +297,50 @@ body {
 .filter-btn.active { background: var(--black); color: var(--white); }
 
 .card-table { display: flex; flex-direction: column; }
-.card-item {
-  border-bottom: 1px solid var(--line);
+.card-item { position: relative; overflow: hidden; border-bottom: 1px solid var(--line); }
+.card-item-delete-bg {
+  position: absolute;
+  inset: 0;
+  background: var(--danger);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+.card-item-delete-btn {
+  background: none;
+  border: none;
+  color: var(--white);
+  font-weight: 600;
+  font-size: 14px;
+  padding: 0 22px;
+  height: 100%;
+  cursor: pointer;
+}
+.card-item-inner {
+  position: relative;
+  background: var(--white);
   padding: 14px 4px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+  touch-action: pan-y;
+  transition: transform 0.2s ease;
 }
+.card-item-inner.swiped { transform: translateX(-84px); }
 .card-item .card-info { min-width: 0; }
 .card-item .card-front-text { font-weight: 600; font-size: 15px; }
 .card-item .card-back-text { color: var(--gray); font-size: 13px; margin-top: 2px; }
-.card-item .card-ops { display: flex; gap: 8px; flex-shrink: 0; }
-.card-item .card-ops button {
+.edit-icon-btn {
   background: none;
   border: none;
-  font-size: 13px;
   color: var(--black);
   cursor: pointer;
-  padding: 4px 6px;
+  padding: 6px;
+  flex-shrink: 0;
+  display: flex;
 }
-.card-item .card-ops button.del { color: var(--danger); }
-.empty-msg { color: var(--gray); font-size: 14px; text-align: center; margin-top: 40px; }
+.empty-msg { color: var(--gray); font-size: 14px; text-align: center; margin-top: 40px; line-height: 1.6; }
 
 /* フォーム */
 .form { display: flex; flex-direction: column; gap: 6px; }
@@ -446,3 +468,50 @@ body {
   cursor: pointer;
 }
 .nav-btn.active { color: var(--black); font-weight: 700; }
+
+/* 画面遷移フェード */
+@keyframes screenFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.screen.active.fade-in { animation: screenFadeIn 0.15s ease; }
+
+/* モーダル */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  z-index: 1000;
+}
+.modal-box {
+  width: 100%;
+  max-width: 320px;
+  background: var(--white);
+  border: 2px solid var(--black);
+  border-radius: 16px;
+  padding: 20px;
+}
+.modal-message {
+  font-size: 15px;
+  line-height: 1.6;
+  white-space: pre-line;
+  margin: 0 0 4px;
+}
+.modal-input {
+  width: 100%;
+  border: none;
+  border-bottom: 1.5px solid var(--black);
+  padding: 10px 2px;
+  font-size: 16px;
+  font-family: inherit;
+  background: transparent;
+  color: var(--black);
+  margin-top: 12px;
+}
+.modal-input:focus { outline: none; }
+.modal-actions { display: flex; gap: 12px; margin-top: 20px; }
+.modal-actions button { flex: 1; }
