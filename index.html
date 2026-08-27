@@ -17,9 +17,6 @@
 <header class="topbar">
   <button id="backBtn" class="icon-btn hidden" aria-label="戻る">←</button>
   <h1 id="topTitle">単語帳</h1>
-  <button id="themeToggle" class="theme-toggle" aria-label="ダークモード切り替え">
-    <span class="theme-toggle-knob"></span>
-  </button>
 </header>
 
 <main id="app">
@@ -158,8 +155,18 @@
       <p id="gaugeSub" class="gauge-sub"></p>
     </div>
     <div id="statsBody" class="stats-body"></div>
+  </section>
 
-    <div class="backup-block">
+  <!-- 設定 -->
+  <section id="screen-settings" class="screen">
+    <div class="settings-block">
+      <label>ダークモード</label>
+      <button id="themeToggle" class="theme-toggle" aria-label="ダークモード切り替え">
+        <span class="theme-toggle-knob"></span>
+      </button>
+    </div>
+
+    <div class="settings-block backup-block">
       <label>バックアップ</label>
       <div class="backup-actions">
         <button id="exportBtn" class="secondary-btn">書き出す</button>
@@ -175,6 +182,7 @@
 <nav class="bottombar">
   <button class="nav-btn" data-nav="home">ホーム</button>
   <button class="nav-btn" data-nav="stats">統計</button>
+  <button class="nav-btn" data-nav="settings">設定</button>
 </nav>
 
 <script src="app.js"></script>

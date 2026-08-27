@@ -81,6 +81,7 @@ function navigate(name, opts = {}) {
   if (name === "add") renderAddForm();
   if (name === "photo") showPhotoStep("pick");
   if (name === "stats") renderStats();
+  if (name === "settings") updateThemeToggleUI();
   showScreen(name, opts);
 }
 

@@ -79,10 +79,6 @@ body {
 }
 
 .theme-toggle {
-  position: absolute;
-  right: 16px;
-  top: 50%;
-  transform: translateY(-50%);
   width: 42px;
   height: 25px;
   border-radius: 13px;
@@ -417,8 +413,12 @@ body {
 }
 .stat-row .stat-value { font-weight: 700; }
 
-.backup-block { margin-top: 32px; }
-.backup-block > label { font-size: 13px; color: var(--gray); }
+.settings-block { padding: 20px 4px; border-bottom: 1px solid var(--line); }
+.settings-block > label { display: block; font-size: 13px; color: var(--gray); margin-bottom: 10px; }
+.settings-block:first-child { display: flex; align-items: center; justify-content: space-between; }
+.settings-block:first-child > label { margin-bottom: 0; }
+
+.backup-block { margin-top: 0; }
 .backup-actions { display: flex; gap: 12px; margin-top: 8px; }
 .backup-actions button { flex: 1; }
 
