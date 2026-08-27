@@ -285,9 +285,8 @@ function startReview() {
     ui.blankUnavailable = base.length > 0 && pool.length === 0;
   }
   if (ui.quizMode === "listening") {
-    const deckCardCount = state.cards.filter((c) => c.deckId === deckId).length;
-    ui.listeningUnavailable = base.length > 0 && deckCardCount < 2;
-    if (ui.listeningUnavailable) pool = [];
+    pool = base.filter((c) => isEnglishText(c.front));
+    ui.listeningUnavailable = base.length > 0 && pool.length === 0;
   }
   ui.reviewQueue = [...pool].sort(() => Math.random() - 0.5);
   ui.reviewIndex = 0;
@@ -318,7 +317,7 @@ function showCurrentCard() {
     document.getElementById("reviewDoneText").textContent = ui.blankUnavailable
       ? "穴埋めに使える例文の単語がありません。他の出題形式をお試しください。"
       : ui.listeningUnavailable
-      ? "4択を作るには単語が2つ以上必要です。他の出題形式をお試しください。"
+      ? "リスニングに使える単語（発音できる英単語）がありません。他の出題形式をお試しください。"
       : ui.reviewMode === "all"
       ? "デッキに単語がありません。"
       : "覚えていない単語はありません。";
