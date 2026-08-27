@@ -241,7 +241,9 @@ body {
   right: 14px;
   background: none;
   border: none;
-  font-size: 22px;
+  color: var(--black);
+  padding: 6px;
+  display: flex;
   cursor: pointer;
 }
 
@@ -304,6 +306,21 @@ body {
 }
 .form input:focus, .form textarea:focus { outline: none; }
 .form .primary-btn { margin-top: 28px; }
+
+.status-toggle-wrap { margin-top: 12px; }
+.status-toggle { display: flex; gap: 10px; margin-top: 6px; }
+.status-toggle-btn {
+  flex: 1;
+  padding: 12px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1.5px solid var(--black);
+  background: var(--white);
+  color: var(--black);
+}
+.status-toggle-btn.active { background: var(--black); color: var(--white); }
 
 /* 統計 */
 .gauge-block { margin-bottom: 28px; }

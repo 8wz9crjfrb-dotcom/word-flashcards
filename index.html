@@ -50,7 +50,13 @@
       <div id="reviewCard" class="card">
         <div id="cardInner" class="card-inner">
           <div class="card-face card-face-front">
-            <button id="speakBtn" class="speak-btn hidden" aria-label="発音を聞く">🔊</button>
+            <button id="speakBtn" class="speak-btn hidden" aria-label="発音を聞く">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 9.5v5h3.5l5 3.8V5.7l-5 3.8H4z" />
+                <path d="M16 9a4.5 4.5 0 0 1 0 6" />
+                <path d="M18.5 6.8a8 8 0 0 1 0 10.4" />
+              </svg>
+            </button>
             <div id="cardFront" class="card-face-text"></div>
           </div>
           <div class="card-face card-face-back">
@@ -84,6 +90,13 @@
       <input id="fieldBack" type="text" required autocomplete="off" />
       <label>例文（任意）</label>
       <textarea id="fieldExample" rows="3"></textarea>
+      <div id="statusToggleWrap" class="status-toggle-wrap hidden">
+        <label>覚えた状態</label>
+        <div class="status-toggle">
+          <button type="button" id="statusNotYetBtn" class="status-toggle-btn">まだ</button>
+          <button type="button" id="statusKnownBtn" class="status-toggle-btn">覚えた</button>
+        </div>
+      </div>
       <button type="submit" class="primary-btn">保存</button>
     </form>
   </section>

@@ -204,7 +204,7 @@ function showCurrentCard() {
 document.getElementById("reviewDoneBackBtn").addEventListener("click", () => goBack());
 
 cardStage.addEventListener("click", (e) => {
-  if (e.target === speakBtn) return;
+  if (speakBtn.contains(e.target)) return;
   ui.flipped = !ui.flipped;
   cardInner.classList.toggle("flipped", ui.flipped);
   reviewButtons.classList.toggle("answer-hidden", !ui.flipped);
@@ -320,6 +320,15 @@ const cardForm = document.getElementById("cardForm");
 const fieldFront = document.getElementById("fieldFront");
 const fieldBack = document.getElementById("fieldBack");
 const fieldExample = document.getElementById("fieldExample");
+const statusToggleWrap = document.getElementById("statusToggleWrap");
+const statusNotYetBtn = document.getElementById("statusNotYetBtn");
+const statusKnownBtn = document.getElementById("statusKnownBtn");
+
+function updateStatusToggleUI(card) {
+  const known = (card.box || 1) >= 5;
+  statusNotYetBtn.classList.toggle("active", !known);
+  statusKnownBtn.classList.toggle("active", known);
+}
 
 function renderAddForm() {
   if (ui.editingCardId) {
@@ -327,10 +336,29 @@ function renderAddForm() {
     fieldFront.value = card.front;
     fieldBack.value = card.back;
     fieldExample.value = card.example || "";
+    statusToggleWrap.classList.remove("hidden");
+    updateStatusToggleUI(card);
   } else {
     cardForm.reset();
+    statusToggleWrap.classList.add("hidden");
   }
 }
+
+statusNotYetBtn.addEventListener("click", () => {
+  const card = state.cards.find((c) => c.id === ui.editingCardId);
+  card.box = 1;
+  card.nextReview = Date.now();
+  saveData(state);
+  updateStatusToggleUI(card);
+});
+
+statusKnownBtn.addEventListener("click", () => {
+  const card = state.cards.find((c) => c.id === ui.editingCardId);
+  card.box = 5;
+  card.nextReview = Date.now() + BOX_INTERVALS[5] * DAY_MS;
+  saveData(state);
+  updateStatusToggleUI(card);
+});
 
 cardForm.addEventListener("submit", (e) => {
   e.preventDefault();
@@ -373,7 +401,7 @@ function renderStats() {
   const rows = [
     ["現在の連続日数", `${state.stats.streak}日`],
     ["総単語数", `${totalCards}語`],
-    ["習得済み（box5）", `${mastered}語`],
+    ["完全に覚えた語", `${mastered}語`],
   ];
   body.innerHTML = rows
     .map(([label, value]) => `<div class="stat-row"><span>${label}</span><span class="stat-value">${value}</span></div>`)
