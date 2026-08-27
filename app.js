@@ -109,6 +109,7 @@ let ui = {
 const screens = document.querySelectorAll(".screen");
 const backBtn = document.getElementById("backBtn");
 const topTitle = document.getElementById("topTitle");
+const bottombar = document.querySelector(".bottombar");
 let navStack = [];
 
 function showScreen(name, opts = {}) {
@@ -119,6 +120,7 @@ function showScreen(name, opts = {}) {
   target.classList.add("fade-in");
   topTitle.textContent = opts.title || "単語帳";
   backBtn.classList.toggle("hidden", !opts.back);
+  bottombar.classList.toggle("hidden", name === "review");
   document.querySelectorAll(".nav-btn").forEach((b) => {
     b.classList.toggle("active", b.dataset.nav === name);
   });
