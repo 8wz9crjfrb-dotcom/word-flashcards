@@ -29,7 +29,7 @@ self.addEventListener("activate", (event) => {
 // ネットワーク優先：オンライン時は常に最新を取得し、オフライン時のみキャッシュを使う
 self.addEventListener("fetch", (event) => {
   event.respondWith(
-    fetch(event.request)
+    fetch(event.request, { cache: "no-store" })
       .then((response) => {
         const copy = response.clone();
         caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));

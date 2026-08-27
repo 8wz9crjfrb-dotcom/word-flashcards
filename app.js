@@ -11,7 +11,7 @@ function loadData() {
       { id: uid(), name: "古典単語", type: "classical" },
     ],
     cards: [],
-    stats: { streak: 0, lastReviewDate: null, totalReviewed: 0 },
+    stats: { streak: 0, lastReviewDate: null },
   };
   saveData(data);
   return data;
@@ -32,6 +32,7 @@ let ui = {
   reviewIndex: 0,
   flipped: false,
   editingCardId: null,
+  reviewMode: "due",
 };
 
 // ---------- ナビゲーション ----------
@@ -125,7 +126,14 @@ function renderDeck() {
   topTitle.textContent = deck.name;
 }
 
-document.getElementById("startReviewBtn").addEventListener("click", () => navigate("review", { back: true, title: currentDeck().name }));
+document.getElementById("startReviewBtn").addEventListener("click", () => {
+  ui.reviewMode = "due";
+  navigate("review", { back: true, title: currentDeck().name });
+});
+document.getElementById("reviewAllBtn").addEventListener("click", () => {
+  ui.reviewMode = "all";
+  navigate("review", { back: true, title: currentDeck().name });
+});
 document.getElementById("addCardBtn").addEventListener("click", () => {
   ui.editingCardId = null;
   navigate("add", { back: true, title: "単語を追加" });
@@ -155,7 +163,7 @@ function startReview() {
   const deckId = ui.currentDeckId;
   const now = Date.now();
   ui.reviewQueue = state.cards
-    .filter((c) => c.deckId === deckId && c.nextReview <= now)
+    .filter((c) => c.deckId === deckId && (ui.reviewMode === "all" || c.nextReview <= now))
     .sort(() => Math.random() - 0.5);
   ui.reviewIndex = 0;
   reviewDone.classList.add("hidden");
@@ -171,7 +179,7 @@ function showCurrentCard() {
   cardInner.classList.remove("flipped");
   void cardInner.offsetHeight;
   cardInner.style.transition = "";
-  reviewButtons.classList.add("hidden");
+  reviewButtons.classList.add("answer-hidden");
 
   if (ui.reviewIndex >= ui.reviewQueue.length) {
     document.getElementById("cardStage").classList.add("hidden");
@@ -183,6 +191,7 @@ function showCurrentCard() {
   }
   document.getElementById("cardStage").classList.remove("hidden");
   document.querySelector(".hint").classList.remove("hidden");
+  reviewButtons.classList.remove("hidden");
 
   const card = ui.reviewQueue[ui.reviewIndex];
   cardFront.textContent = card.front;
@@ -198,7 +207,7 @@ cardStage.addEventListener("click", (e) => {
   if (e.target === speakBtn) return;
   ui.flipped = !ui.flipped;
   cardInner.classList.toggle("flipped", ui.flipped);
-  reviewButtons.classList.toggle("hidden", !ui.flipped);
+  reviewButtons.classList.toggle("answer-hidden", !ui.flipped);
 });
 
 speakBtn.addEventListener("click", () => {
@@ -259,10 +268,7 @@ cardStage.addEventListener("touchend", (e) => {
 
 function recordReviewToday() {
   const today = new Date().toDateString();
-  if (state.stats.lastReviewDate === today) {
-    state.stats.totalReviewed++;
-    return;
-  }
+  if (state.stats.lastReviewDate === today) return;
   const yesterday = new Date(Date.now() - DAY_MS).toDateString();
   if (state.stats.lastReviewDate === yesterday) {
     state.stats.streak++;
@@ -270,7 +276,6 @@ function recordReviewToday() {
     state.stats.streak = 1;
   }
   state.stats.lastReviewDate = today;
-  state.stats.totalReviewed++;
 }
 
 // ---------- 単語一覧 ----------
@@ -369,7 +374,6 @@ function renderStats() {
     ["現在の連続日数", `${state.stats.streak}日`],
     ["総単語数", `${totalCards}語`],
     ["習得済み（box5）", `${mastered}語`],
-    ["累計復習回数", `${state.stats.totalReviewed}回`],
   ];
   body.innerHTML = rows
     .map(([label, value]) => `<div class="stat-row"><span>${label}</span><span class="stat-value">${value}</span></div>`)

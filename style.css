@@ -3,7 +3,18 @@
   --white: #ffffff;
   --gray: #888888;
   --line: #dddddd;
-  color-scheme: light;
+  --danger: #aa0000;
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --black: #ffffff;
+    --white: #121212;
+    --gray: #999999;
+    --line: #333333;
+    --danger: #ff6b6b;
+  }
 }
 
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -93,7 +104,7 @@ body {
   text-align: left;
   cursor: pointer;
 }
-.text-btn.danger { color: #a00; margin-top: auto; }
+.text-btn.danger { color: var(--danger); margin-top: auto; }
 
 /* デッキ画面 */
 .deck-heading { font-size: 22px; margin: 8px 0 4px; }
@@ -146,6 +157,7 @@ body {
   perspective: 1400px;
   touch-action: pan-y;
   user-select: none;
+  overflow: hidden;
 }
 
 .card-inner {
@@ -199,6 +211,7 @@ body {
 .hint { color: var(--gray); font-size: 13px; margin: 12px 0; }
 
 .review-buttons { display: flex; gap: 14px; width: 100%; max-width: 320px; }
+.review-buttons.answer-hidden { visibility: hidden; }
 .review-btn {
   flex: 1;
   padding: 15px;
@@ -236,7 +249,7 @@ body {
   cursor: pointer;
   padding: 4px 6px;
 }
-.card-item .card-ops button.del { color: #a00; }
+.card-item .card-ops button.del { color: var(--danger); }
 .empty-msg { color: var(--gray); font-size: 14px; text-align: center; margin-top: 40px; }
 
 /* フォーム */
