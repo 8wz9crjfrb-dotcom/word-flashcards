@@ -142,6 +142,10 @@ body {
 .deck-reorder-btn:disabled { opacity: 0.3; cursor: default; }
 
 .home-actions { display: flex; align-items: center; justify-content: space-between; }
+.home-actions-left { display: flex; align-items: center; gap: 16px; }
+
+.backup-actions { display: flex; gap: 10px; margin-top: 10px; }
+.backup-actions .secondary-btn { flex: 1; }
 
 .text-btn {
   background: none;

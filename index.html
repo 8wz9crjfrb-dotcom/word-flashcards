@@ -32,9 +32,13 @@
     </div>
     <div id="deckList" class="deck-list"></div>
     <div class="home-actions">
-      <button id="newDeckBtn" class="text-btn">＋ 新しいデッキ</button>
+      <div class="home-actions-left">
+        <button id="newDeckBtn" class="text-btn">＋ 新しいデッキ</button>
+        <button id="importDeckBtn" class="text-btn">デッキを読み込む</button>
+      </div>
       <button id="deckReorderBtn" class="text-btn hidden">並び替え</button>
     </div>
+    <input id="importDeckInput" class="hidden" type="file" accept="application/json,.json" />
   </section>
 
   <!-- デッキ画面 -->
@@ -62,6 +66,7 @@
       <button id="startReviewBtn" class="primary-btn">復習する</button>
       <button id="reviewAllBtn" class="secondary-btn">総復習</button>
       <button id="viewListBtn" class="secondary-btn">単語一覧</button>
+      <button id="exportDeckBtn" class="text-btn">このデッキを書き出す</button>
       <button id="renameDeckBtn" class="text-btn">デッキ名を変更</button>
       <button id="deleteDeckBtn" class="text-btn danger">このデッキを削除</button>
     </div>
@@ -274,6 +279,15 @@
       </div>
     </div>
 
+    <div class="settings-block">
+      <label>バックアップ（全データ）</label>
+      <div class="backup-actions">
+        <button id="backupExportBtn" class="secondary-btn">書き出す</button>
+        <button id="backupImportBtn" class="secondary-btn">読み込む</button>
+      </div>
+      <input id="backupImportInput" class="hidden" type="file" accept="application/json,.json" />
+    </div>
+
     <div class="settings-block settings-block-end">
       <button id="helpBtn" class="secondary-btn">使い方を見る</button>
     </div>
@@ -315,6 +329,14 @@
     <div class="help-section">
       <h3>カレンダー</h3>
       <p>その日はじめてアプリを開くと、統計画面のカレンダーにハンコが押されます。「‹」「›」で月を切り替えて確認できます。ハンコが押された日をタップすると、その日に新しく覚えた単語数を確認できます。</p>
+    </div>
+    <div class="help-section">
+      <h3>デッキを配布する</h3>
+      <p>デッキ画面の「このデッキを書き出す」で、そのデッキの単語だけをファイルに保存できます（覚えた状態や統計は含みません）。そのファイルを相手に送り、相手がホーム画面の「デッキを読み込む」で開くと、新しいデッキとして追加されます。</p>
+    </div>
+    <div class="help-section">
+      <h3>バックアップ</h3>
+      <p>設定画面の「バックアップ」では、全デッキ・単語・統計をまとめてファイルに書き出せます。機種変更などの際に「読み込む」で復元してください（読み込むと現在のデータはすべて上書きされます）。</p>
     </div>
   </section>
 

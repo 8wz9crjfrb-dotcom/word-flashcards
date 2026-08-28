@@ -1,6 +1,19 @@
 const STORAGE_KEY = "tangoAppData_v1";
 const DAY_MS = 24 * 60 * 60 * 1000;
 
+// 読み上げ言語は以前デッキ単位で持っていなかったため、既存デッキには
+// カード内容から一度だけ推測して補完する（英単語が1つでもあれば英語、
+// なければオフ＝古典単語デッキなどを誤って読み上げないようにする）。
+// バックアップ復元時にも、古い形式のファイルに備えて同じ処理をかける。
+function migrateDeckLangs(data) {
+  data.decks.forEach((deck) => {
+    if (deck.lang === undefined) {
+      const deckCards = data.cards.filter((c) => c.deckId === deck.id);
+      deck.lang = deckCards.some((c) => isEnglishText(c.front)) ? "en" : "off";
+    }
+  });
+}
+
 function loadData() {
   const raw = localStorage.getItem(STORAGE_KEY);
   if (raw) {
@@ -9,15 +22,7 @@ function loadData() {
       if (c.known === undefined) c.known = (c.box || 1) >= 5;
       delete c.box;
     });
-    // 読み上げ言語は以前デッキ単位で持っていなかったため、既存デッキには
-    // カード内容から一度だけ推測して補完する（英単語が1つでもあれば英語、
-    // なければオフ＝古典単語デッキなどを誤って読み上げないようにする）。
-    data.decks.forEach((deck) => {
-      if (deck.lang === undefined) {
-        const deckCards = data.cards.filter((c) => c.deckId === deck.id);
-        deck.lang = deckCards.some((c) => isEnglishText(c.front)) ? "en" : "off";
-      }
-    });
+    migrateDeckLangs(data);
     return data;
   }
   const data = {
@@ -379,6 +384,110 @@ document.getElementById("deleteDeckBtn").addEventListener("click", async () => {
   saveData(state);
   navStack = [];
   navigate("home");
+});
+
+// JSONをファイルとしてダウンロードさせる（デッキの書き出し／バックアップ共通）
+function downloadJson(payload, filename) {
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+// ---------- デッキの書き出し／読み込み（配布用：単語のみ、進捗・統計は含めない） ----------
+document.getElementById("exportDeckBtn").addEventListener("click", () => {
+  const deck = currentDeck();
+  const deckCards = state.cards.filter((c) => c.deckId === deck.id);
+  const payload = {
+    type: "tango-deck",
+    version: 1,
+    name: deck.name,
+    lang: deck.lang,
+    cards: deckCards.map((c) => ({ front: c.front, back: c.back, example: c.example || "" })),
+  };
+  downloadJson(payload, `単語帳_${deck.name}.json`);
+});
+
+const importDeckInput = document.getElementById("importDeckInput");
+document.getElementById("importDeckBtn").addEventListener("click", () => importDeckInput.click());
+importDeckInput.addEventListener("change", async () => {
+  const file = importDeckInput.files[0];
+  importDeckInput.value = "";
+  if (!file) return;
+  try {
+    const payload = JSON.parse(await file.text());
+    if (payload.type !== "tango-deck" || !Array.isArray(payload.cards)) {
+      await showAlert("デッキのファイルとして読み込めませんでした。");
+      return;
+    }
+    const name = payload.name ? String(payload.name) : "読み込んだデッキ";
+    const lang = payload.lang === "zh" || payload.lang === "en" ? payload.lang : "en";
+    const newDeckId = uid();
+    state.decks.push({ id: newDeckId, name, lang });
+    payload.cards.forEach((c) => {
+      if (!c || !c.front || !c.back) return;
+      state.cards.push({
+        id: uid(),
+        deckId: newDeckId,
+        front: String(c.front),
+        back: String(c.back),
+        example: c.example ? String(c.example) : "",
+        known: false,
+        createdAt: Date.now(),
+      });
+    });
+    saveData(state);
+    renderHome();
+    await showAlert(`「${name}」を追加しました。`);
+  } catch (e) {
+    await showAlert("ファイルを読み込めませんでした。破損しているか、対応していない形式です。");
+  }
+});
+
+// ---------- 全データのバックアップ（自分用：機種変更などで丸ごと復元） ----------
+document.getElementById("backupExportBtn").addEventListener("click", () => {
+  const payload = { type: "tango-backup", version: 1, decks: state.decks, cards: state.cards, stats: state.stats };
+  downloadJson(payload, `単語帳バックアップ_${jstDateString(Date.now())}.json`);
+});
+
+const backupImportInput = document.getElementById("backupImportInput");
+document.getElementById("backupImportBtn").addEventListener("click", () => backupImportInput.click());
+backupImportInput.addEventListener("change", async () => {
+  const file = backupImportInput.files[0];
+  backupImportInput.value = "";
+  if (!file) return;
+  try {
+    const payload = JSON.parse(await file.text());
+    if (payload.type !== "tango-backup" || !Array.isArray(payload.decks) || !Array.isArray(payload.cards)) {
+      await showAlert("バックアップファイルとして読み込めませんでした。");
+      return;
+    }
+    const ok = await showConfirm("現在のデータはすべて上書きされます。復元してよろしいですか？");
+    if (!ok) return;
+    state = {
+      decks: payload.decks,
+      cards: payload.cards,
+      stats: payload.stats || { streak: 0, lastReviewDate: null, dailyLearnedCounts: {}, stampedDates: [] },
+    };
+    state.cards.forEach((c) => {
+      if (c.known === undefined) c.known = (c.box || 1) >= 5;
+      delete c.box;
+    });
+    migrateDeckLangs(state);
+    saveData(state);
+    backfillStampedDatesForStreak();
+    stampToday();
+    navStack = [];
+    navigate("home");
+    await showAlert("バックアップを復元しました。");
+  } catch (e) {
+    await showAlert("ファイルを読み込めませんでした。破損しているか、対応していない形式です。");
+  }
 });
 
 // ---------- 復習画面 ----------
