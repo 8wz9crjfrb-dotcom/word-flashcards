@@ -488,8 +488,9 @@ function selectListeningChoice(btn, choiceText, card) {
   quizChoices.classList.add("answered");
 
   const correct = choiceText === card.back;
+  const justLearned = correct && !card.known;
   card.known = correct;
-  recordReviewToday();
+  recordReviewToday(justLearned);
   saveData(state);
 
   Array.from(quizChoices.children).forEach((b) => {
@@ -511,8 +512,9 @@ function checkQuizAnswer() {
   const quizFeedback = document.getElementById("quizFeedback");
   const answer = quizInput.value.trim();
   const correct = answer.length > 0 && answer.toLowerCase() === card.front.toLowerCase();
+  const justLearned = correct && !card.known;
   card.known = correct;
-  recordReviewToday();
+  recordReviewToday(justLearned);
   saveData(state);
 
   quizFeedback.textContent = correct ? "○ 正解" : `× 正しくは: ${card.front}`;
@@ -575,8 +577,9 @@ document.getElementById("quizPlayBtn").addEventListener("click", () => {
 
 function answerCard(correct) {
   const card = ui.reviewQueue[ui.reviewIndex];
+  const justLearned = correct && !card.known;
   card.known = correct;
-  recordReviewToday();
+  recordReviewToday(justLearned);
   saveData(state);
   ui.reviewIndex++;
   showCurrentCard();
@@ -620,14 +623,19 @@ function jstDateString(timestamp) {
   return `${jst.getUTCFullYear()}-${jst.getUTCMonth() + 1}-${jst.getUTCDate()}`;
 }
 
-function recordReviewToday() {
+// justLearned: この回答で単語が「未習得→覚えた」に変わったときだけtrue。
+// 今日の目標は「今日新しく覚えた語数」を数えるためのもので、
+// 総復習ですでに覚えている単語を再確認しただけの場合はカウントしない。
+function recordReviewToday(justLearned) {
   const today = jstDateString(Date.now());
 
-  if (state.stats.todayCountDate !== today) {
-    state.stats.todayCountDate = today;
-    state.stats.todayCount = 0;
+  if (justLearned) {
+    if (state.stats.todayCountDate !== today) {
+      state.stats.todayCountDate = today;
+      state.stats.todayCount = 0;
+    }
+    state.stats.todayCount++;
   }
-  state.stats.todayCount++;
 
   if (state.stats.lastReviewDate === today) return;
   const yesterday = jstDateString(Date.now() - DAY_MS);
