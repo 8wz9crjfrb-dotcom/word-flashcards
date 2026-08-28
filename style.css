@@ -23,6 +23,8 @@ button {
   appearance: none;
   font-family: inherit;
   margin: 0;
+  /* 連続タップがダブルタップとみなされてページがズームするのを防ぐ */
+  touch-action: manipulation;
 }
 
 html, body {
@@ -635,6 +637,7 @@ body {
   font-weight: 700;
   transform: rotate(-8deg);
   box-shadow: none;
+  cursor: pointer;
 }
 
 .settings-block { padding: 20px 4px; border-bottom: 1px solid var(--line); }

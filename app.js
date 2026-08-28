@@ -16,7 +16,7 @@ function loadData() {
       { id: uid(), name: "英単語" },
     ],
     cards: [],
-    stats: { streak: 0, lastReviewDate: null, todayCount: 0, todayCountDate: null, stampedDates: [] },
+    stats: { streak: 0, lastReviewDate: null, dailyLearnedCounts: {}, stampedDates: [] },
   };
   saveData(data);
   return data;
@@ -245,9 +245,13 @@ function currentDailyGoal() {
   return localStorage.getItem("dailyGoal") || "10";
 }
 
+// 指定した日（jstDateString形式）に新しく覚えた語数を返す
+function learnedCountOn(dateStr) {
+  return (state.stats.dailyLearnedCounts && state.stats.dailyLearnedCounts[dateStr]) || 0;
+}
+
 function todayReviewCount() {
-  const today = jstDateString(Date.now());
-  return state.stats.todayCountDate === today ? state.stats.todayCount : 0;
+  return learnedCountOn(jstDateString(Date.now()));
 }
 
 function renderGoalBlock() {
@@ -644,16 +648,15 @@ function goalDelta(wasKnown, nowKnown) {
   return 0;
 }
 
-// 今日の目標のカウントを増減する（0未満にはしない）。
+// 今日の学習語数を増減する（0未満にはしない）。日付ごとに記録しておき、
+// 「今日の目標」とカレンダーの日別詳細の両方から参照する。
 // 復習画面だけでなく、単語編集画面でステータスを直接切り替えた場合にも呼ぶ。
 function applyGoalDelta(delta) {
   if (!delta) return;
   const today = jstDateString(Date.now());
-  if (state.stats.todayCountDate !== today) {
-    state.stats.todayCountDate = today;
-    state.stats.todayCount = 0;
-  }
-  state.stats.todayCount = Math.max(0, state.stats.todayCount + delta);
+  if (!state.stats.dailyLearnedCounts) state.stats.dailyLearnedCounts = {};
+  const current = state.stats.dailyLearnedCounts[today] || 0;
+  state.stats.dailyLearnedCounts[today] = Math.max(0, current + delta);
 }
 
 // 今日の目標は「今日新しく覚えた語数」を数えるためのもの。
@@ -1138,12 +1141,19 @@ function renderCalendar() {
   }
   for (let d = 1; d <= daysInMonth; d++) {
     const dateStr = `${year}-${month + 1}-${d}`;
+    const isStamped = stamped.has(dateStr);
     const cell = document.createElement("div");
     cell.className =
       "calendar-day" +
       (dateStr === todayStr ? " today" : "") +
-      (stamped.has(dateStr) ? " stamped" : "");
+      (isStamped ? " stamped" : "");
     cell.textContent = d;
+    if (isStamped) {
+      cell.addEventListener("click", () => {
+        const count = learnedCountOn(dateStr);
+        showAlert(`${year}年${month + 1}月${d}日：${count}語覚えました`);
+      });
+    }
     grid.appendChild(cell);
   }
 }
