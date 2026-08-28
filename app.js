@@ -1107,7 +1107,9 @@ function renderStats() {
   document.getElementById("gaugeFill").style.width = percent + "%";
   document.getElementById("gaugePercent").textContent = percent + "%";
   document.getElementById("gaugeSub").textContent = `${mastered} / ${totalCards} 語 習得済み`;
+  const totalDays = (state.stats.stampedDates || []).length;
   const rows = [
+    ["総学習日数", `${totalDays}日`],
     ["現在の連続日数", `${state.stats.streak}日`],
     ["総単語数", `${totalCards}語`],
     ["覚えた語", `${mastered}語`],
