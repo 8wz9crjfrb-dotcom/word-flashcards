@@ -488,9 +488,15 @@ function showCurrentCard() {
 
 // 例文のうち読み上げる部分を取り出す。英語デッキは日本語訳が混ざっている
 // ことがあるため英語部分だけを抽出し、それ以外の言語は例文全体をそのまま読む。
+// （）／()で囲まれた部分（訳注などの補足）を読み上げ対象から取り除く
+function stripParens(text) {
+  return text.replace(/（[^（）]*）|\([^()]*\)/g, " ").replace(/\s+/g, " ").trim();
+}
+
 function exampleSpeechText(card, deckLang) {
   if (!card.example) return "";
-  return deckLang === "en" ? extractEnglish(card.example) : card.example;
+  const text = stripParens(card.example);
+  return deckLang === "en" ? extractEnglish(text) : text;
 }
 
 function setupQuizCard(card) {
