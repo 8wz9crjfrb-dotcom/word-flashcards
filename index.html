@@ -50,6 +50,14 @@
         <button class="quiz-mode-btn" data-mode="listening">リスニング</button>
       </div>
     </div>
+    <div class="quiz-mode-select">
+      <label>読み上げ言語</label>
+      <div class="quiz-mode-buttons">
+        <button class="lang-select-btn" data-lang="off">オフ</button>
+        <button class="lang-select-btn" data-lang="en">英語</button>
+        <button class="lang-select-btn" data-lang="zh">中国語</button>
+      </div>
+    </div>
     <div class="deck-actions">
       <button id="startReviewBtn" class="primary-btn">復習する</button>
       <button id="reviewAllBtn" class="secondary-btn">総復習</button>
@@ -278,7 +286,11 @@
       <p><strong>カード</strong>：タップして裏返し、答え合わせをします。左右にスワイプしても「まだ」「覚えた」を選べます。</p>
       <p><strong>タイピング</strong>：意味を見て単語を入力します。</p>
       <p><strong>穴埋め</strong>：例文中の単語部分が空欄になり、文脈から思い出して入力します（例文が登録されている単語のみ対象）。</p>
-      <p><strong>リスニング</strong>：単語の発音を聞いて、意味を4択から選びます（再生できる英単語のみ対象）。</p>
+      <p><strong>リスニング</strong>：単語の発音を聞いて、意味を4択から選びます（デッキの読み上げ言語が「オフ」以外のときのみ対象）。</p>
+    </div>
+    <div class="help-section">
+      <h3>読み上げ言語</h3>
+      <p>デッキ画面の「読み上げ言語」で、そのデッキの単語をどの言語で読み上げるか（オフ／英語／中国語）を選べます。日本語の漢字だけの単語は中国語と見分けがつかないため、自動判定はせずデッキごとに指定する仕様です。古典単語など読み上げが不要なデッキは「オフ」にしてください。</p>
     </div>
     <div class="help-section">
       <h3>復習する／総復習</h3>

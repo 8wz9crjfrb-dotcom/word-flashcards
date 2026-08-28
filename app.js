@@ -9,11 +9,20 @@ function loadData() {
       if (c.known === undefined) c.known = (c.box || 1) >= 5;
       delete c.box;
     });
+    // 読み上げ言語は以前デッキ単位で持っていなかったため、既存デッキには
+    // カード内容から一度だけ推測して補完する（英単語が1つでもあれば英語、
+    // なければオフ＝古典単語デッキなどを誤って読み上げないようにする）。
+    data.decks.forEach((deck) => {
+      if (deck.lang === undefined) {
+        const deckCards = data.cards.filter((c) => c.deckId === deck.id);
+        deck.lang = deckCards.some((c) => isEnglishText(c.front)) ? "en" : "off";
+      }
+    });
     return data;
   }
   const data = {
     decks: [
-      { id: uid(), name: "英単語" },
+      { id: uid(), name: "英単語", lang: "en" },
     ],
     cards: [],
     stats: { streak: 0, lastReviewDate: null, dailyLearnedCounts: {}, stampedDates: [] },
@@ -236,7 +245,7 @@ deckReorderBtn.addEventListener("click", () => {
 document.getElementById("newDeckBtn").addEventListener("click", async () => {
   const name = await showPrompt("デッキ名を入力してください");
   if (!name) return;
-  state.decks.push({ id: uid(), name });
+  state.decks.push({ id: uid(), name, lang: "en" });
   saveData(state);
   renderHome();
 });
@@ -300,6 +309,7 @@ function renderDeck() {
   const pending = pendingCount(deck.id);
   document.getElementById("deckDue").textContent = `全${total}語 ・ 未習得 ${pending}件`;
   topTitle.textContent = deck.name;
+  updateLangSelectUI();
 }
 
 const quizModeBtns = document.querySelectorAll(".quiz-mode-btn");
@@ -309,6 +319,28 @@ quizModeBtns.forEach((btn) => {
     quizModeBtns.forEach((b) => b.classList.toggle("active", b === btn));
   });
 });
+
+// 読み上げ言語（デッキ単位で明示的に指定する。自動判定はしない）
+const langSelectBtns = document.querySelectorAll(".lang-select-btn");
+
+function updateLangSelectUI() {
+  const deck = currentDeck();
+  langSelectBtns.forEach((btn) => btn.classList.toggle("active", btn.dataset.lang === deck.lang));
+}
+
+langSelectBtns.forEach((btn) => {
+  btn.addEventListener("click", () => {
+    const deck = currentDeck();
+    deck.lang = btn.dataset.lang;
+    saveData(state);
+    updateLangSelectUI();
+  });
+});
+
+// deck.lang（"en" | "zh"）をWeb Speech APIのlangコードに変換
+function ttsLangCode(deckLang) {
+  return deckLang === "zh" ? "zh-CN" : "en-US";
+}
 
 document.getElementById("startReviewBtn").addEventListener("click", () => {
   ui.reviewMode = "due";
@@ -373,8 +405,10 @@ function startReview() {
     ui.blankUnavailable = base.length > 0 && pool.length === 0;
   }
   if (ui.quizMode === "listening") {
-    pool = base.filter((c) => isEnglishText(c.front));
-    ui.listeningUnavailable = base.length > 0 && pool.length === 0;
+    if (currentDeck().lang === "off") {
+      pool = [];
+      ui.listeningUnavailable = base.length > 0;
+    }
   }
   ui.reviewQueue = [...pool].sort(() => Math.random() - 0.5);
   ui.reviewIndex = 0;
@@ -405,7 +439,7 @@ function showCurrentCard() {
     document.getElementById("reviewDoneText").textContent = ui.blankUnavailable
       ? "穴埋めに使える例文の単語がありません。他の出題形式をお試しください。"
       : ui.listeningUnavailable
-      ? "リスニングに使える単語（再生できる英単語）がありません。他の出題形式をお試しください。"
+      ? "このデッキには読み上げ言語が設定されていません。デッキ画面で読み上げ言語を選んでください。"
       : ui.reviewMode === "all"
       ? "デッキに単語がありません。"
       : "覚えていない単語はありません。";
@@ -435,8 +469,16 @@ function showCurrentCard() {
   cardBackMeaning.textContent = card.back;
   cardBackExample.textContent = card.example || "";
   cardBackExample.classList.toggle("hidden", !card.example);
-  speakBtn.classList.toggle("hidden", !isEnglishText(card.front));
-  exampleSpeakBtn.classList.toggle("hidden", !extractEnglish(card.example || ""));
+  const deckLang = currentDeck().lang;
+  speakBtn.classList.toggle("hidden", deckLang === "off");
+  exampleSpeakBtn.classList.toggle("hidden", deckLang === "off" || !exampleSpeechText(card, deckLang));
+}
+
+// 例文のうち読み上げる部分を取り出す。英語デッキは日本語訳が混ざっている
+// ことがあるため英語部分だけを抽出し、それ以外の言語は例文全体をそのまま読む。
+function exampleSpeechText(card, deckLang) {
+  if (!card.example) return "";
+  return deckLang === "en" ? extractEnglish(card.example) : card.example;
 }
 
 function setupQuizCard(card) {
@@ -460,7 +502,7 @@ function setupQuizCard(card) {
 
   if (isListening) {
     setupListeningChoices(card);
-    speakText(card.front);
+    speakText(card.front, ttsLangCode(currentDeck().lang));
     return;
   }
 
@@ -555,9 +597,9 @@ cardStage.addEventListener("click", (e) => {
   updateReviewHint();
 });
 
-function speakText(text) {
+function speakText(text, lang) {
   const utter = new SpeechSynthesisUtterance(text);
-  utter.lang = "en-US";
+  utter.lang = lang;
   utter.rate = currentSpeechRate();
   speechSynthesis.cancel();
   speechSynthesis.speak(utter);
@@ -566,21 +608,22 @@ function speakText(text) {
 speakBtn.addEventListener("click", () => {
   const card = ui.reviewQueue[ui.reviewIndex];
   if (!card) return;
-  speakText(card.front);
+  speakText(card.front, ttsLangCode(currentDeck().lang));
 });
 
 exampleSpeakBtn.addEventListener("click", () => {
   const card = ui.reviewQueue[ui.reviewIndex];
   if (!card || !card.example) return;
-  const englishOnly = extractEnglish(card.example);
-  if (!englishOnly) return;
-  speakText(englishOnly);
+  const deckLang = currentDeck().lang;
+  const text = exampleSpeechText(card, deckLang);
+  if (!text) return;
+  speakText(text, ttsLangCode(deckLang));
 });
 
 document.getElementById("quizPlayBtn").addEventListener("click", () => {
   const card = ui.reviewQueue[ui.reviewIndex];
   if (!card) return;
-  speakText(card.front);
+  speakText(card.front, ttsLangCode(currentDeck().lang));
 });
 
 function answerCard(correct) {

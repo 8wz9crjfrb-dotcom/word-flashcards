@@ -175,6 +175,19 @@ body {
 }
 .quiz-mode-btn.active { background: var(--black); color: var(--white); }
 
+.lang-select-btn {
+  flex: 1;
+  padding: 8px 4px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1.5px solid var(--black);
+  background: var(--white);
+  color: var(--black);
+}
+.lang-select-btn.active { background: var(--black); color: var(--white); }
+
 .primary-btn {
   background: var(--black);
   color: var(--white);
