@@ -49,6 +49,17 @@ function extractEnglish(text) {
   return text.replace(/[　-〿぀-ヿ㐀-鿿＀-￯]+/g, " ").replace(/\s+/g, " ").trim();
 }
 
+// デッキの読み上げ言語（deckLang）に対応する文字がtextに含まれているか。
+// 「英語」設定でも英字がなければ読み上げボタンを出さない、
+// 「中国語」設定でも漢字がなければ出さない、という判定に使う。
+// 中国語と日本語の漢字は区別できないため、ここでは「その言語で読める
+// 文字が入っているか」だけを見る（デッキの言語自体は自動判定しない）。
+function hasSpeechText(text, deckLang) {
+  if (!text || deckLang === "off") return false;
+  if (deckLang === "zh") return /[㐀-鿿]/.test(text);
+  return /[a-zA-Z]/.test(text);
+}
+
 // ---------- モーダルダイアログ ----------
 const modalOverlay = document.getElementById("modalOverlay");
 const modalMessage = document.getElementById("modalMessage");
@@ -405,10 +416,9 @@ function startReview() {
     ui.blankUnavailable = base.length > 0 && pool.length === 0;
   }
   if (ui.quizMode === "listening") {
-    if (currentDeck().lang === "off") {
-      pool = [];
-      ui.listeningUnavailable = base.length > 0;
-    }
+    const deckLang = currentDeck().lang;
+    pool = base.filter((c) => hasSpeechText(c.front, deckLang));
+    ui.listeningUnavailable = base.length > 0 && pool.length === 0;
   }
   ui.reviewQueue = [...pool].sort(() => Math.random() - 0.5);
   ui.reviewIndex = 0;
@@ -439,7 +449,9 @@ function showCurrentCard() {
     document.getElementById("reviewDoneText").textContent = ui.blankUnavailable
       ? "穴埋めに使える例文の単語がありません。他の出題形式をお試しください。"
       : ui.listeningUnavailable
-      ? "このデッキには読み上げ言語が設定されていません。デッキ画面で読み上げ言語を選んでください。"
+      ? currentDeck().lang === "off"
+        ? "このデッキには読み上げ言語が設定されていません。デッキ画面で読み上げ言語を選んでください。"
+        : "リスニングに使える単語がありません。デッキの読み上げ言語と単語の表記が合っているか確認してください。"
       : ui.reviewMode === "all"
       ? "デッキに単語がありません。"
       : "覚えていない単語はありません。";
@@ -470,8 +482,8 @@ function showCurrentCard() {
   cardBackExample.textContent = card.example || "";
   cardBackExample.classList.toggle("hidden", !card.example);
   const deckLang = currentDeck().lang;
-  speakBtn.classList.toggle("hidden", deckLang === "off");
-  exampleSpeakBtn.classList.toggle("hidden", deckLang === "off" || !exampleSpeechText(card, deckLang));
+  speakBtn.classList.toggle("hidden", !hasSpeechText(card.front, deckLang));
+  exampleSpeakBtn.classList.toggle("hidden", !hasSpeechText(exampleSpeechText(card, deckLang), deckLang));
 }
 
 // 例文のうち読み上げる部分を取り出す。英語デッキは日本語訳が混ざっている
