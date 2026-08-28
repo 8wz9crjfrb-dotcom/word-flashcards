@@ -15,8 +15,8 @@
 <body>
 
 <header class="topbar">
-  <button id="backBtn" class="icon-btn hidden" aria-label="戻る">←</button>
-  <h1 id="topTitle">単語帳</h1>
+  <button id="backBtn" class="icon-btn hidden" aria-label="戻る" data-i18n-aria="back">←</button>
+  <h1 id="topTitle" data-i18n="appTitle">単語帳</h1>
 </header>
 
 <main id="app">
@@ -25,7 +25,7 @@
   <section id="screen-home" class="screen">
     <div id="goalBlock" class="goal-block hidden">
       <div class="goal-label">
-        <span>今日の目標</span>
+        <span data-i18n="goal_label">今日の目標</span>
         <span id="goalCount"></span>
       </div>
       <div class="gauge-track"><div id="goalFill" class="gauge-fill"></div></div>
@@ -33,10 +33,10 @@
     <div id="deckList" class="deck-list"></div>
     <div class="home-actions">
       <div class="home-actions-left">
-        <button id="newDeckBtn" class="text-btn">＋ 新しいデッキ</button>
-        <button id="importDeckBtn" class="text-btn">デッキを読み込む</button>
+        <button id="newDeckBtn" class="text-btn" data-i18n="deck_new">＋ 新しいデッキ</button>
+        <button id="importDeckBtn" class="text-btn" data-i18n="deck_import">デッキを読み込む</button>
       </div>
-      <button id="deckReorderBtn" class="text-btn hidden">並び替え</button>
+      <button id="deckReorderBtn" class="text-btn hidden" data-i18n="deck_reorder">並び替え</button>
     </div>
     <input id="importDeckInput" class="hidden" type="file" accept="application/json,.json" />
   </section>
@@ -46,29 +46,29 @@
     <h2 id="deckTitle" class="deck-heading"></h2>
     <p id="deckDue" class="deck-sub"></p>
     <div class="quiz-mode-select">
-      <label>出題形式</label>
+      <label data-i18n="quiz_mode_label">出題形式</label>
       <div class="quiz-mode-buttons">
-        <button class="quiz-mode-btn active" data-mode="card">カード</button>
-        <button class="quiz-mode-btn" data-mode="typing">タイピング</button>
-        <button class="quiz-mode-btn" data-mode="blank">穴埋め</button>
-        <button class="quiz-mode-btn" data-mode="listening">リスニング</button>
+        <button class="quiz-mode-btn active" data-mode="card" data-i18n="quiz_mode_card">カード</button>
+        <button class="quiz-mode-btn" data-mode="typing" data-i18n="quiz_mode_typing">タイピング</button>
+        <button class="quiz-mode-btn" data-mode="blank" data-i18n="quiz_mode_blank">穴埋め</button>
+        <button class="quiz-mode-btn" data-mode="listening" data-i18n="quiz_mode_listening">リスニング</button>
       </div>
     </div>
     <div class="quiz-mode-select">
-      <label>読み上げ言語</label>
+      <label data-i18n="tts_lang_label">読み上げ言語</label>
       <div class="quiz-mode-buttons">
-        <button class="lang-select-btn" data-lang="off">オフ</button>
-        <button class="lang-select-btn" data-lang="en">英語</button>
-        <button class="lang-select-btn" data-lang="zh">中国語</button>
+        <button class="lang-select-btn" data-lang="off" data-i18n="tts_lang_off">オフ</button>
+        <button class="lang-select-btn" data-lang="en" data-i18n="tts_lang_en">英語</button>
+        <button class="lang-select-btn" data-lang="zh" data-i18n="tts_lang_zh">中国語</button>
       </div>
     </div>
     <div class="deck-actions">
-      <button id="startReviewBtn" class="primary-btn">復習する</button>
-      <button id="reviewAllBtn" class="secondary-btn">総復習</button>
-      <button id="viewListBtn" class="secondary-btn">単語一覧</button>
-      <button id="exportDeckBtn" class="text-btn">このデッキを書き出す</button>
-      <button id="renameDeckBtn" class="text-btn">デッキ名を変更</button>
-      <button id="deleteDeckBtn" class="text-btn danger">このデッキを削除</button>
+      <button id="startReviewBtn" class="primary-btn" data-i18n="btn_start_review">復習する</button>
+      <button id="reviewAllBtn" class="secondary-btn" data-i18n="btn_review_all">総復習</button>
+      <button id="viewListBtn" class="secondary-btn" data-i18n="btn_word_list">単語一覧</button>
+      <button id="exportDeckBtn" class="text-btn" data-i18n="btn_export_deck">このデッキを書き出す</button>
+      <button id="renameDeckBtn" class="text-btn" data-i18n="btn_rename_deck">デッキ名を変更</button>
+      <button id="deleteDeckBtn" class="text-btn danger" data-i18n="btn_delete_deck">このデッキを削除</button>
     </div>
   </section>
 
@@ -79,7 +79,7 @@
       <div id="reviewCard" class="card">
         <div id="cardInner" class="card-inner">
           <div class="card-face card-face-front">
-            <button id="speakBtn" class="speak-btn hidden" aria-label="発音を聞く">
+            <button id="speakBtn" class="speak-btn hidden" aria-label="発音を聞く" data-i18n-aria="speak_aria">
               <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M4 9.5v5h3.5l5 3.8V5.7l-5 3.8H4z" />
                 <path d="M16 9a4.5 4.5 0 0 1 0 6" />
@@ -89,7 +89,7 @@
             <div id="cardFront" class="card-face-text"></div>
           </div>
           <div class="card-face card-face-back">
-            <button id="exampleSpeakBtn" class="speak-btn hidden" aria-label="例文の発音を聞く">
+            <button id="exampleSpeakBtn" class="speak-btn hidden" aria-label="例文の発音を聞く" data-i18n-aria="example_speak_aria">
               <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M4 9.5v5h3.5l5 3.8V5.7l-5 3.8H4z" />
                 <path d="M16 9a4.5 4.5 0 0 1 0 6" />
@@ -106,14 +106,14 @@
     </div>
     <p id="reviewHint" class="hint">タップで裏返す</p>
     <div id="reviewButtons" class="review-buttons hidden">
-      <button id="stillBtn" class="review-btn no">まだ</button>
-      <button id="knowBtn" class="review-btn yes">覚えた</button>
+      <button id="stillBtn" class="review-btn no" data-i18n="btn_still">まだ</button>
+      <button id="knowBtn" class="review-btn yes" data-i18n="btn_know">覚えた</button>
     </div>
 
     <div id="quizStage" class="quiz-stage hidden">
       <div class="quiz-prompt-card">
         <div id="quizPrompt" class="quiz-prompt-text"></div>
-        <button id="quizPlayBtn" class="quiz-play-btn hidden" aria-label="音声を再生">
+        <button id="quizPlayBtn" class="quiz-play-btn hidden" aria-label="音声を再生" data-i18n-aria="quiz_play_aria">
           <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
             <path d="M4 9.5v5h3.5l5 3.8V5.7l-5 3.8H4z" />
             <path d="M16 9a4.5 4.5 0 0 1 0 6" />
@@ -121,16 +121,16 @@
           </svg>
         </button>
       </div>
-      <input id="quizInput" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="単語を入力" />
+      <input id="quizInput" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="単語を入力" data-i18n-ph="quiz_input_placeholder" />
       <div id="quizChoices" class="quiz-choices hidden"></div>
       <p id="quizFeedback" class="quiz-feedback hidden"></p>
-      <button id="quizCheckBtn" class="primary-btn">答え合わせ</button>
-      <button id="quizNextBtn" class="primary-btn hidden">次へ</button>
+      <button id="quizCheckBtn" class="primary-btn" data-i18n="btn_check_answer">答え合わせ</button>
+      <button id="quizNextBtn" class="primary-btn hidden" data-i18n="btn_next">次へ</button>
     </div>
 
     <div id="reviewDone" class="review-done hidden">
       <p id="reviewDoneText"></p>
-      <button id="reviewDoneBackBtn" class="primary-btn">デッキ画面に戻る</button>
+      <button id="reviewDoneBackBtn" class="primary-btn" data-i18n="btn_back_to_deck">デッキ画面に戻る</button>
     </div>
   </section>
 
@@ -139,50 +139,50 @@
     <input id="photoInput" class="hidden" type="file" accept="image/*" capture="environment" />
 
     <div id="photoPick" class="photo-step">
-      <p class="hint">単語1つが収まるように撮影してください（英語のみ対応）</p>
-      <button id="photoTakeBtn" class="primary-btn">撮影する</button>
+      <p class="hint" data-i18n="photo_hint_shoot">単語1つが収まるように撮影してください（英語のみ対応）</p>
+      <button id="photoTakeBtn" class="primary-btn" data-i18n="btn_shoot">撮影する</button>
     </div>
 
     <div id="photoCrop" class="photo-step hidden">
-      <p class="hint">単語を囲むようにドラッグして範囲を選択</p>
+      <p class="hint" data-i18n="photo_hint_crop">単語を囲むようにドラッグして範囲を選択</p>
       <div id="photoStage" class="photo-stage">
         <img id="photoImg" alt="" />
         <div id="selectionBox" class="selection-box hidden"></div>
       </div>
       <div class="photo-actions">
-        <button id="photoRetakeBtn" class="secondary-btn">撮り直す</button>
-        <button id="photoRecognizeBtn" class="primary-btn">この範囲を読み取る</button>
+        <button id="photoRetakeBtn" class="secondary-btn" data-i18n="btn_retake">撮り直す</button>
+        <button id="photoRecognizeBtn" class="primary-btn" data-i18n="btn_recognize">この範囲を読み取る</button>
       </div>
     </div>
 
     <div id="photoResult" class="photo-step hidden">
-      <label>読み取り結果（編集可）</label>
+      <label data-i18n="label_ocr_result">読み取り結果（編集可）</label>
       <input id="photoResultField" type="text" autocomplete="off" />
       <div class="photo-actions">
-        <button id="photoReselectBtn" class="secondary-btn">範囲を選び直す</button>
-        <button id="photoRetakeBtn2" class="secondary-btn">新しく撮影</button>
+        <button id="photoReselectBtn" class="secondary-btn" data-i18n="btn_reselect">範囲を選び直す</button>
+        <button id="photoRetakeBtn2" class="secondary-btn" data-i18n="btn_retake2">新しく撮影</button>
       </div>
-      <button id="photoUseBtn" class="primary-btn">この内容を使う</button>
+      <button id="photoUseBtn" class="primary-btn" data-i18n="btn_use_result">この内容を使う</button>
     </div>
 
     <div id="photoLoading" class="photo-step hidden">
-      <p class="hint">読み取り中…</p>
+      <p class="hint" data-i18n="photo_loading">読み取り中…</p>
     </div>
   </section>
 
   <!-- 単語一覧 -->
   <section id="screen-list" class="screen">
-    <button id="addCardBtn" class="secondary-btn add-card-btn">＋ 単語を追加</button>
+    <button id="addCardBtn" class="secondary-btn add-card-btn" data-i18n="btn_add_card">＋ 単語を追加</button>
     <div class="list-controls">
-      <input id="listSearch" type="text" placeholder="検索" autocomplete="off" />
+      <input id="listSearch" type="text" placeholder="検索" autocomplete="off" data-i18n-ph="search_placeholder" />
       <div class="list-filter">
-        <button class="filter-btn active" data-filter="all">すべて</button>
-        <button class="filter-btn" data-filter="unknown">まだ</button>
-        <button class="filter-btn" data-filter="known">覚えた</button>
+        <button class="filter-btn active" data-filter="all" data-i18n="filter_all">すべて</button>
+        <button class="filter-btn" data-filter="unknown" data-i18n="filter_unknown">まだ</button>
+        <button class="filter-btn" data-filter="known" data-i18n="filter_known">覚えた</button>
       </div>
       <div class="list-sort">
-        <button class="sort-btn active" data-sort="added">追加順</button>
-        <button class="sort-btn" data-sort="alpha">アルファベット順</button>
+        <button class="sort-btn active" data-sort="added" data-i18n="sort_added">追加順</button>
+        <button class="sort-btn" data-sort="alpha" data-i18n="sort_alpha">アルファベット順</button>
       </div>
     </div>
     <div id="cardTable" class="card-table"></div>
@@ -192,37 +192,37 @@
   <section id="screen-add" class="screen">
     <form id="cardForm" class="form">
       <div class="field-label-row">
-        <label>表（単語）</label>
+        <label data-i18n="label_front">表（単語）</label>
         <button type="button" id="frontCameraBtn" class="field-camera-btn">
           <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
             <path d="M4 8h3l1.5-2h7L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z" />
             <circle cx="12" cy="13" r="3.2" />
           </svg>
-          写真から入力
+          <span data-i18n="btn_photo_input">写真から入力</span>
         </button>
       </div>
       <input id="fieldFront" type="text" required autocomplete="off" />
-      <label>裏（意味）</label>
+      <label data-i18n="label_back">裏（意味）</label>
       <input id="fieldBack" type="text" required autocomplete="off" />
       <div class="field-label-row">
-        <label>例文（任意）</label>
+        <label data-i18n="label_example">例文（任意）</label>
         <button type="button" id="exampleCameraBtn" class="field-camera-btn">
           <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
             <path d="M4 8h3l1.5-2h7L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z" />
             <circle cx="12" cy="13" r="3.2" />
           </svg>
-          写真から入力
+          <span data-i18n="btn_photo_input">写真から入力</span>
         </button>
       </div>
       <textarea id="fieldExample" rows="3"></textarea>
       <div id="statusToggleWrap" class="status-toggle-wrap hidden">
-        <label>覚えた状態</label>
+        <label data-i18n="label_status">覚えた状態</label>
         <div class="status-toggle">
-          <button type="button" id="statusNotYetBtn" class="status-toggle-btn">まだ</button>
-          <button type="button" id="statusKnownBtn" class="status-toggle-btn">覚えた</button>
+          <button type="button" id="statusNotYetBtn" class="status-toggle-btn" data-i18n="btn_still">まだ</button>
+          <button type="button" id="statusKnownBtn" class="status-toggle-btn" data-i18n="btn_know">覚えた</button>
         </div>
       </div>
-      <button type="submit" class="primary-btn">保存</button>
+      <button type="submit" class="primary-btn" data-i18n="btn_save">保存</button>
     </form>
   </section>
 
@@ -230,7 +230,7 @@
   <section id="screen-stats" class="screen">
     <div class="gauge-block">
       <div class="gauge-label">
-        <span>習得の進捗</span>
+        <span data-i18n="label_progress">習得の進捗</span>
         <span id="gaugePercent">0%</span>
       </div>
       <div class="gauge-track"><div id="gaugeFill" class="gauge-fill"></div></div>
@@ -239,13 +239,11 @@
     <div id="statsBody" class="stats-body"></div>
     <div class="calendar-block">
       <div class="calendar-header">
-        <button type="button" id="calendarPrevBtn" class="calendar-nav-btn" aria-label="前の月">‹</button>
+        <button type="button" id="calendarPrevBtn" class="calendar-nav-btn" aria-label="前の月" data-i18n-aria="calendar_prev_aria">‹</button>
         <span id="calendarLabel" class="calendar-label"></span>
-        <button type="button" id="calendarNextBtn" class="calendar-nav-btn" aria-label="次の月">›</button>
+        <button type="button" id="calendarNextBtn" class="calendar-nav-btn" aria-label="次の月" data-i18n-aria="calendar_next_aria">›</button>
       </div>
-      <div class="calendar-weekdays">
-        <span>日</span><span>月</span><span>火</span><span>水</span><span>木</span><span>金</span><span>土</span>
-      </div>
+      <div id="calendarWeekdays" class="calendar-weekdays"></div>
       <div id="calendarGrid" class="calendar-grid"></div>
     </div>
   </section>
@@ -253,26 +251,35 @@
   <!-- 設定 -->
   <section id="screen-settings" class="screen">
     <div class="settings-block settings-row">
-      <label>表示モード</label>
+      <label data-i18n="label_ui_lang">言語</label>
       <div class="theme-toggle">
-        <button id="themeLightBtn" class="theme-toggle-btn" data-theme-choice="light">ライト</button>
-        <button id="themeDarkBtn" class="theme-toggle-btn" data-theme-choice="dark">ダーク</button>
-        <button id="themeSystemBtn" class="theme-toggle-btn" data-theme-choice="system">自動</button>
+        <button id="uiLangJaBtn" class="theme-toggle-btn" data-ui-lang="ja">日本語</button>
+        <button id="uiLangEnBtn" class="theme-toggle-btn" data-ui-lang="en">English</button>
+        <button id="uiLangZhBtn" class="theme-toggle-btn" data-ui-lang="zh">繁體中文</button>
       </div>
     </div>
 
     <div class="settings-block settings-row">
-      <label>読み上げ速度</label>
+      <label data-i18n="label_theme">表示モード</label>
       <div class="theme-toggle">
-        <button id="speechRateNormalBtn" class="theme-toggle-btn">通常</button>
-        <button id="speechRateSlowBtn" class="theme-toggle-btn">ゆっくり</button>
+        <button id="themeLightBtn" class="theme-toggle-btn" data-theme-choice="light" data-i18n="theme_light">ライト</button>
+        <button id="themeDarkBtn" class="theme-toggle-btn" data-theme-choice="dark" data-i18n="theme_dark">ダーク</button>
+        <button id="themeSystemBtn" class="theme-toggle-btn" data-theme-choice="system" data-i18n="theme_system">自動</button>
       </div>
     </div>
 
     <div class="settings-block settings-row">
-      <label>今日の目標</label>
+      <label data-i18n="label_speech_rate">読み上げ速度</label>
       <div class="theme-toggle">
-        <button id="dailyGoalOffBtn" class="theme-toggle-btn" data-goal="off">オフ</button>
+        <button id="speechRateNormalBtn" class="theme-toggle-btn" data-i18n="rate_normal">通常</button>
+        <button id="speechRateSlowBtn" class="theme-toggle-btn" data-i18n="rate_slow">ゆっくり</button>
+      </div>
+    </div>
+
+    <div class="settings-block settings-row">
+      <label data-i18n="label_daily_goal">今日の目標</label>
+      <div class="theme-toggle">
+        <button id="dailyGoalOffBtn" class="theme-toggle-btn" data-goal="off" data-i18n="goal_off">オフ</button>
         <button id="dailyGoal5Btn" class="theme-toggle-btn" data-goal="5">5</button>
         <button id="dailyGoal10Btn" class="theme-toggle-btn" data-goal="10">10</button>
         <button id="dailyGoal20Btn" class="theme-toggle-btn" data-goal="20">20</button>
@@ -280,72 +287,72 @@
     </div>
 
     <div class="settings-block">
-      <label>バックアップ（全データ）</label>
+      <label data-i18n="label_backup">バックアップ（全データ）</label>
       <div class="backup-actions">
-        <button id="backupExportBtn" class="secondary-btn">書き出す</button>
-        <button id="backupImportBtn" class="secondary-btn">読み込む</button>
+        <button id="backupExportBtn" class="secondary-btn" data-i18n="btn_backup_export">書き出す</button>
+        <button id="backupImportBtn" class="secondary-btn" data-i18n="btn_backup_import">読み込む</button>
       </div>
       <input id="backupImportInput" class="hidden" type="file" accept="application/json,.json" />
     </div>
 
     <div class="settings-block settings-block-end">
-      <button id="helpBtn" class="secondary-btn">使い方を見る</button>
+      <button id="helpBtn" class="secondary-btn" data-i18n="btn_help">使い方を見る</button>
     </div>
   </section>
 
   <!-- 使い方 -->
   <section id="screen-help" class="screen">
     <div class="help-section">
-      <h3>出題形式</h3>
-      <p><strong>カード</strong>：タップして裏返し、答え合わせをします。左右にスワイプしても「まだ」「覚えた」を選べます。</p>
-      <p><strong>タイピング</strong>：意味を見て単語を入力します。</p>
-      <p><strong>穴埋め</strong>：例文中の単語部分が空欄になり、文脈から思い出して入力します（例文が登録されている単語のみ対象）。</p>
-      <p><strong>リスニング</strong>：単語の発音を聞いて、意味を4択から選びます（デッキの読み上げ言語が「オフ」以外のときのみ対象）。</p>
+      <h3 data-i18n="help_quiz_mode_title">出題形式</h3>
+      <p data-i18n-html="help_quiz_mode_card"><strong>カード</strong>：タップして裏返し、答え合わせをします。左右にスワイプしても「まだ」「覚えた」を選べます。</p>
+      <p data-i18n-html="help_quiz_mode_typing"><strong>タイピング</strong>：意味を見て単語を入力します。</p>
+      <p data-i18n-html="help_quiz_mode_blank"><strong>穴埋め</strong>：例文中の単語部分が空欄になり、文脈から思い出して入力します（例文が登録されている単語のみ対象）。</p>
+      <p data-i18n-html="help_quiz_mode_listening"><strong>リスニング</strong>：単語の発音を聞いて、意味を4択から選びます（デッキの読み上げ言語が「オフ」以外のときのみ対象）。</p>
     </div>
     <div class="help-section">
-      <h3>読み上げ言語</h3>
-      <p>デッキ画面の「読み上げ言語」で、そのデッキの単語をどの言語で読み上げるか（オフ／英語／中国語）を選べます。日本語の漢字だけの単語は中国語と見分けがつかないため、自動判定はせずデッキごとに指定する仕様です。古典単語など読み上げが不要なデッキは「オフ」にしてください。設定した言語に対応する文字（英語なら英字、中国語なら漢字）が単語に含まれていない場合、その単語では発音ボタンは表示されません。</p>
+      <h3 data-i18n="help_tts_lang_title">読み上げ言語</h3>
+      <p data-i18n="help_tts_lang_body">デッキ画面の「読み上げ言語」で、そのデッキの単語をどの言語で読み上げるか（オフ／英語／中国語）を選べます。日本語の漢字だけの単語は中国語と見分けがつかないため、自動判定はせずデッキごとに指定する仕様です。古典単語など読み上げが不要なデッキは「オフ」にしてください。設定した言語に対応する文字（英語なら英字、中国語なら漢字）が単語に含まれていない場合、その単語では発音ボタンは表示されません。</p>
     </div>
     <div class="help-section">
-      <h3>復習する／総復習</h3>
-      <p>「復習する」はまだ覚えていない単語だけ、「総復習」はデッキ内すべての単語が対象です。</p>
+      <h3 data-i18n="help_review_title">復習する／総復習</h3>
+      <p data-i18n="help_review_body">「復習する」はまだ覚えていない単語だけ、「総復習」はデッキ内すべての単語が対象です。</p>
     </div>
     <div class="help-section">
-      <h3>写真から入力</h3>
-      <p>単語一覧の「＋ 単語を追加」を開くと、「表」「例文」それぞれの横にカメラボタンがあります。撮影して範囲を選ぶと、その部分の文字を読み取って入力できます（英語のみ対応）。</p>
+      <h3 data-i18n="help_photo_title">写真から入力</h3>
+      <p data-i18n="help_photo_body">単語一覧の「＋ 単語を追加」を開くと、「表」「例文」それぞれの横にカメラボタンがあります。撮影して範囲を選ぶと、その部分の文字を読み取って入力できます（英語のみ対応）。</p>
     </div>
     <div class="help-section">
-      <h3>単語一覧</h3>
-      <p>検索・絞り込み・並び替えができます。単語を左にスワイプすると削除ボタンが出ます。</p>
+      <h3 data-i18n="help_list_title">単語一覧</h3>
+      <p data-i18n="help_list_body">検索・絞り込み・並び替えができます。単語を左にスワイプすると削除ボタンが出ます。</p>
     </div>
     <div class="help-section">
-      <h3>今日の目標</h3>
-      <p>設定画面で1日に新しく覚える単語数の目標を設定できます。ホーム画面に今日の達成状況が表示されます（すでに覚えている単語を復習しただけではカウントされません。「覚えた」から「まだ」に戻すと達成数からも減ります。「オフ」で非表示にできます）。</p>
+      <h3 data-i18n="help_goal_title">今日の目標</h3>
+      <p data-i18n="help_goal_body">設定画面で1日に新しく覚える単語数の目標を設定できます。ホーム画面に今日の達成状況が表示されます（すでに覚えている単語を復習しただけではカウントされません。「覚えた」から「まだ」に戻すと達成数からも減ります。「オフ」で非表示にできます）。</p>
     </div>
     <div class="help-section">
-      <h3>デッキの並び替え</h3>
-      <p>ホーム画面の「並び替え」から、デッキの表示順を▲▼ボタンで変更できます（デッキが2つ以上のときに表示されます）。</p>
+      <h3 data-i18n="help_reorder_title">デッキの並び替え</h3>
+      <p data-i18n="help_reorder_body">ホーム画面の「並び替え」から、デッキの表示順を▲▼ボタンで変更できます（デッキが2つ以上のときに表示されます）。</p>
     </div>
     <div class="help-section">
-      <h3>カレンダー</h3>
-      <p>その日はじめてアプリを開くと、統計画面のカレンダーにハンコが押されます。「‹」「›」で月を切り替えて確認できます。ハンコが押された日をタップすると、その日に新しく覚えた単語数を確認できます。</p>
+      <h3 data-i18n="help_calendar_title">カレンダー</h3>
+      <p data-i18n="help_calendar_body">その日はじめてアプリを開くと、統計画面のカレンダーにハンコが押されます。「‹」「›」で月を切り替えて確認できます。ハンコが押された日をタップすると、その日に新しく覚えた単語数を確認できます。</p>
     </div>
     <div class="help-section">
-      <h3>デッキを配布する</h3>
-      <p>デッキ画面の「このデッキを書き出す」で、そのデッキの単語だけをファイルに保存できます（覚えた状態や統計は含みません）。そのファイルを相手に送り、相手がホーム画面の「デッキを読み込む」で開くと、新しいデッキとして追加されます。</p>
+      <h3 data-i18n="help_share_title">デッキを配布する</h3>
+      <p data-i18n="help_share_body">デッキ画面の「このデッキを書き出す」で、そのデッキの単語だけをファイルに保存できます（覚えた状態や統計は含みません）。そのファイルを相手に送り、相手がホーム画面の「デッキを読み込む」で開くと、新しいデッキとして追加されます。</p>
     </div>
     <div class="help-section">
-      <h3>バックアップ</h3>
-      <p>設定画面の「バックアップ」では、全デッキ・単語・統計をまとめてファイルに書き出せます。機種変更などの際に「読み込む」で復元してください（読み込むと現在のデータはすべて上書きされます）。</p>
+      <h3 data-i18n="help_backup_title">バックアップ</h3>
+      <p data-i18n="help_backup_body">設定画面の「バックアップ」では、全デッキ・単語・統計をまとめてファイルに書き出せます。機種変更などの際に「読み込む」で復元してください（読み込むと現在のデータはすべて上書きされます）。</p>
     </div>
   </section>
 
 </main>
 
 <nav class="bottombar">
-  <button class="nav-btn" data-nav="home">ホーム</button>
-  <button class="nav-btn" data-nav="stats">統計</button>
-  <button class="nav-btn" data-nav="settings">設定</button>
+  <button class="nav-btn" data-nav="home" data-i18n="nav_home">ホーム</button>
+  <button class="nav-btn" data-nav="stats" data-i18n="nav_stats">統計</button>
+  <button class="nav-btn" data-nav="settings" data-i18n="nav_settings">設定</button>
 </nav>
 
 <div id="modalOverlay" class="modal-overlay hidden">
@@ -353,8 +360,8 @@
     <p id="modalMessage" class="modal-message"></p>
     <input id="modalInput" class="modal-input hidden" type="text" autocomplete="off" />
     <div class="modal-actions">
-      <button id="modalCancelBtn" class="secondary-btn">キャンセル</button>
-      <button id="modalOkBtn" class="primary-btn">OK</button>
+      <button id="modalCancelBtn" class="secondary-btn" data-i18n="btn_cancel">キャンセル</button>
+      <button id="modalOkBtn" class="primary-btn" data-i18n="btn_ok">OK</button>
     </div>
   </div>
 </div>
