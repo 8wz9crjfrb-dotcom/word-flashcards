@@ -16,7 +16,7 @@ function loadData() {
       { id: uid(), name: "英単語" },
     ],
     cards: [],
-    stats: { streak: 0, lastReviewDate: null, todayCount: 0, todayCountDate: null },
+    stats: { streak: 0, lastReviewDate: null, todayCount: 0, todayCountDate: null, stampedDates: [] },
   };
   saveData(data);
   return data;
@@ -90,6 +90,7 @@ function showPrompt(message, defaultValue) {
 }
 
 let state = loadData();
+stampToday();
 let ui = {
   currentDeckId: null,
   reviewQueue: [],
@@ -103,6 +104,8 @@ let ui = {
   photoTarget: "front",
   quizMode: "card",
   blankUnavailable: false,
+  calendarYear: null,
+  calendarMonth: null,
 };
 
 // ---------- ナビゲーション ----------
@@ -623,6 +626,16 @@ function jstDateString(timestamp) {
   return `${jst.getUTCFullYear()}-${jst.getUTCMonth() + 1}-${jst.getUTCDate()}`;
 }
 
+// その日はじめてアプリを開いたときに、統計カレンダーへハンコを押す
+function stampToday() {
+  const today = jstDateString(Date.now());
+  if (!state.stats.stampedDates) state.stats.stampedDates = [];
+  if (!state.stats.stampedDates.includes(today)) {
+    state.stats.stampedDates.push(today);
+    saveData(state);
+  }
+}
+
 // wasKnown/nowKnown: 回答前後の「覚えた」状態から今日の目標への増減を求める。
 // 未習得→覚えた で+1、覚えた→未習得（元に戻した）で-1、それ以外は0。
 function goalDelta(wasKnown, nowKnown) {
@@ -1099,7 +1112,59 @@ function renderStats() {
   body.innerHTML = rows
     .map(([label, value]) => `<div class="stat-row"><span>${label}</span><span class="stat-value">${value}</span></div>`)
     .join("");
+
+  const now = new Date(Date.now() + 9 * 60 * 60 * 1000);
+  ui.calendarYear = now.getUTCFullYear();
+  ui.calendarMonth = now.getUTCMonth();
+  renderCalendar();
 }
+
+function renderCalendar() {
+  const year = ui.calendarYear;
+  const month = ui.calendarMonth;
+  document.getElementById("calendarLabel").textContent = `${year}年${month + 1}月`;
+
+  const startWeekday = new Date(Date.UTC(year, month, 1)).getUTCDay();
+  const daysInMonth = new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
+  const todayStr = jstDateString(Date.now());
+  const stamped = new Set(state.stats.stampedDates || []);
+
+  const grid = document.getElementById("calendarGrid");
+  grid.innerHTML = "";
+  for (let i = 0; i < startWeekday; i++) {
+    const cell = document.createElement("div");
+    cell.className = "calendar-day empty";
+    grid.appendChild(cell);
+  }
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateStr = `${year}-${month + 1}-${d}`;
+    const cell = document.createElement("div");
+    cell.className =
+      "calendar-day" +
+      (dateStr === todayStr ? " today" : "") +
+      (stamped.has(dateStr) ? " stamped" : "");
+    cell.textContent = d;
+    grid.appendChild(cell);
+  }
+}
+
+document.getElementById("calendarPrevBtn").addEventListener("click", () => {
+  ui.calendarMonth--;
+  if (ui.calendarMonth < 0) {
+    ui.calendarMonth = 11;
+    ui.calendarYear--;
+  }
+  renderCalendar();
+});
+
+document.getElementById("calendarNextBtn").addEventListener("click", () => {
+  ui.calendarMonth++;
+  if (ui.calendarMonth > 11) {
+    ui.calendarMonth = 0;
+    ui.calendarYear++;
+  }
+  renderCalendar();
+});
 
 function escapeHtml(str) {
   const div = document.createElement("div");
