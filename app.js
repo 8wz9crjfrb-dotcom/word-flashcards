@@ -90,6 +90,7 @@ function showPrompt(message, defaultValue) {
 }
 
 let state = loadData();
+backfillStampedDatesForStreak();
 stampToday();
 let ui = {
   currentDeckId: null,
@@ -636,6 +637,32 @@ function stampToday() {
   if (!state.stats.stampedDates) state.stats.stampedDates = [];
   if (!state.stats.stampedDates.includes(today)) {
     state.stats.stampedDates.push(today);
+    saveData(state);
+  }
+}
+
+// カレンダーのハンコ機能より前から連続日数（streak）を積み上げていたユーザーは、
+// stampedDatesにその期間の記録がなく「総学習日数 < 連続日数」という不自然な状態になる。
+// streak分の日付をlastReviewDateから遡って補完し、矛盾しないようにする。
+function backfillStampedDatesForStreak() {
+  const { streak, lastReviewDate } = state.stats;
+  if (!streak || !lastReviewDate) return;
+  if (!state.stats.stampedDates) state.stats.stampedDates = [];
+  const stamped = new Set(state.stats.stampedDates);
+  const parts = lastReviewDate.split("-").map(Number);
+  let cursor = Date.UTC(parts[0], parts[1] - 1, parts[2]);
+  let changed = false;
+  for (let i = 0; i < streak; i++) {
+    const d = new Date(cursor);
+    const dateStr = `${d.getUTCFullYear()}-${d.getUTCMonth() + 1}-${d.getUTCDate()}`;
+    if (!stamped.has(dateStr)) {
+      stamped.add(dateStr);
+      changed = true;
+    }
+    cursor -= DAY_MS;
+  }
+  if (changed) {
+    state.stats.stampedDates = Array.from(stamped);
     saveData(state);
   }
 }
