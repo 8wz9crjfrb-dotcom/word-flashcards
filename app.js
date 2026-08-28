@@ -631,20 +631,26 @@ function goalDelta(wasKnown, nowKnown) {
   return 0;
 }
 
+// 今日の目標のカウントを増減する（0未満にはしない）。
+// 復習画面だけでなく、単語編集画面でステータスを直接切り替えた場合にも呼ぶ。
+function applyGoalDelta(delta) {
+  if (!delta) return;
+  const today = jstDateString(Date.now());
+  if (state.stats.todayCountDate !== today) {
+    state.stats.todayCountDate = today;
+    state.stats.todayCount = 0;
+  }
+  state.stats.todayCount = Math.max(0, state.stats.todayCount + delta);
+}
+
 // 今日の目標は「今日新しく覚えた語数」を数えるためのもの。
 // 総復習ですでに覚えている単語を再確認しただけの場合は増減しないが、
 // 「覚えた」から「まだ」に戻した場合は達成数からも減らす。
+// あわせて復習した日として連続日数（ストリーク）も更新する。
 function recordReviewToday(delta) {
+  applyGoalDelta(delta);
+
   const today = jstDateString(Date.now());
-
-  if (delta) {
-    if (state.stats.todayCountDate !== today) {
-      state.stats.todayCountDate = today;
-      state.stats.todayCount = 0;
-    }
-    state.stats.todayCount = Math.max(0, state.stats.todayCount + delta);
-  }
-
   if (state.stats.lastReviewDate === today) return;
   const yesterday = jstDateString(Date.now() - DAY_MS);
   if (state.stats.lastReviewDate === yesterday) {
@@ -852,14 +858,18 @@ function renderAddForm() {
 
 statusNotYetBtn.addEventListener("click", () => {
   const card = state.cards.find((c) => c.id === ui.editingCardId);
+  const wasKnown = card.known;
   card.known = false;
+  applyGoalDelta(goalDelta(wasKnown, card.known));
   saveData(state);
   updateStatusToggleUI(card);
 });
 
 statusKnownBtn.addEventListener("click", () => {
   const card = state.cards.find((c) => c.id === ui.editingCardId);
+  const wasKnown = card.known;
   card.known = true;
+  applyGoalDelta(goalDelta(wasKnown, card.known));
   saveData(state);
   updateStatusToggleUI(card);
 });
