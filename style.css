@@ -96,6 +96,18 @@ body {
 .screen { display: none; height: 100%; flex-direction: column; }
 .screen.active { display: flex; }
 
+/* 今日の目標 */
+.goal-block { margin-bottom: 24px; }
+.goal-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 13px;
+  color: var(--gray);
+  margin-bottom: 8px;
+}
+.goal-label span:last-child { font-size: 14px; font-weight: 600; color: var(--black); }
+
 /* デッキ一覧 */
 .deck-list { display: flex; flex-direction: column; gap: 0; margin-bottom: 20px; }
 
@@ -111,6 +123,23 @@ body {
 .deck-row .deck-name { font-size: 16px; font-weight: 500; }
 .deck-row .deck-count { font-size: 14px; color: var(--gray); }
 .deck-row .deck-count.due { color: var(--black); font-weight: 600; }
+
+.deck-row.reorder-mode { cursor: default; }
+.deck-row-info { display: flex; flex-direction: column; gap: 2px; }
+.deck-reorder-btns { display: flex; gap: 6px; flex-shrink: 0; }
+.deck-reorder-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1.5px solid var(--black);
+  background: var(--white);
+  color: var(--black);
+  font-size: 13px;
+  cursor: pointer;
+}
+.deck-reorder-btn:disabled { opacity: 0.3; cursor: default; }
+
+.home-actions { display: flex; align-items: center; justify-content: space-between; }
 
 .text-btn {
   background: none;

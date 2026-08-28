@@ -16,7 +16,7 @@ function loadData() {
       { id: uid(), name: "英単語" },
     ],
     cards: [],
-    stats: { streak: 0, lastReviewDate: null },
+    stats: { streak: 0, lastReviewDate: null, todayCount: 0, todayCountDate: null },
   };
   saveData(data);
   return data;
@@ -168,29 +168,66 @@ function pendingCount(deckId) {
   return state.cards.filter((c) => c.deckId === deckId && !c.known).length;
 }
 
+let deckReorderMode = false;
+const deckReorderBtn = document.getElementById("deckReorderBtn");
+
 function renderHome() {
+  renderGoalBlock();
   const list = document.getElementById("deckList");
   list.innerHTML = "";
+  deckReorderBtn.classList.toggle("hidden", state.decks.length < 2);
   if (state.decks.length === 0) {
     list.innerHTML = '<p class="empty-msg">デッキがありません。<br>「＋ 新しいデッキ」から作成しましょう。</p>';
     return;
   }
-  state.decks.forEach((deck) => {
+  state.decks.forEach((deck, index) => {
     const total = state.cards.filter((c) => c.deckId === deck.id).length;
     const pending = pendingCount(deck.id);
     const row = document.createElement("div");
-    row.className = "deck-row";
-    row.innerHTML = `
-      <span class="deck-name">${escapeHtml(deck.name)}</span>
-      <span class="deck-count ${pending > 0 ? "due" : ""}">${total}語 ${pending > 0 ? `/ 未習得${pending}件` : ""}</span>
-    `;
-    row.addEventListener("click", () => {
-      ui.currentDeckId = deck.id;
-      navigate("deck", { back: true });
-    });
+    row.className = "deck-row" + (deckReorderMode ? " reorder-mode" : "");
+    if (deckReorderMode) {
+      row.innerHTML = `
+        <div class="deck-row-info">
+          <span class="deck-name">${escapeHtml(deck.name)}</span>
+          <span class="deck-count ${pending > 0 ? "due" : ""}">${total}語 ${pending > 0 ? `/ 未習得${pending}件` : ""}</span>
+        </div>
+        <div class="deck-reorder-btns">
+          <button type="button" class="deck-reorder-btn" data-dir="up" ${index === 0 ? "disabled" : ""} aria-label="上へ移動">▲</button>
+          <button type="button" class="deck-reorder-btn" data-dir="down" ${index === state.decks.length - 1 ? "disabled" : ""} aria-label="下へ移動">▼</button>
+        </div>
+      `;
+      row.querySelectorAll(".deck-reorder-btn").forEach((btn) => {
+        btn.addEventListener("click", () => moveDeck(deck.id, btn.dataset.dir));
+      });
+    } else {
+      row.innerHTML = `
+        <span class="deck-name">${escapeHtml(deck.name)}</span>
+        <span class="deck-count ${pending > 0 ? "due" : ""}">${total}語 ${pending > 0 ? `/ 未習得${pending}件` : ""}</span>
+      `;
+      row.addEventListener("click", () => {
+        ui.currentDeckId = deck.id;
+        navigate("deck", { back: true });
+      });
+    }
     list.appendChild(row);
   });
 }
+
+function moveDeck(deckId, dir) {
+  const idx = state.decks.findIndex((d) => d.id === deckId);
+  if (idx === -1) return;
+  const swapWith = dir === "up" ? idx - 1 : idx + 1;
+  if (swapWith < 0 || swapWith >= state.decks.length) return;
+  [state.decks[idx], state.decks[swapWith]] = [state.decks[swapWith], state.decks[idx]];
+  saveData(state);
+  renderHome();
+}
+
+deckReorderBtn.addEventListener("click", () => {
+  deckReorderMode = !deckReorderMode;
+  deckReorderBtn.textContent = deckReorderMode ? "完了" : "並び替え";
+  renderHome();
+});
 
 document.getElementById("newDeckBtn").addEventListener("click", async () => {
   const name = await showPrompt("デッキ名を入力してください");
@@ -199,6 +236,49 @@ document.getElementById("newDeckBtn").addEventListener("click", async () => {
   saveData(state);
   renderHome();
 });
+
+// ---------- 今日の目標 ----------
+function currentDailyGoal() {
+  return localStorage.getItem("dailyGoal") || "10";
+}
+
+function todayReviewCount() {
+  const today = jstDateString(Date.now());
+  return state.stats.todayCountDate === today ? state.stats.todayCount : 0;
+}
+
+function renderGoalBlock() {
+  const goalBlock = document.getElementById("goalBlock");
+  const goal = currentDailyGoal();
+  if (goal === "off") {
+    goalBlock.classList.add("hidden");
+    return;
+  }
+  const goalNum = parseInt(goal, 10);
+  const count = todayReviewCount();
+  const percent = goalNum > 0 ? Math.min(100, Math.round((count / goalNum) * 100)) : 0;
+  document.getElementById("goalFill").style.width = percent + "%";
+  document.getElementById("goalCount").textContent =
+    count >= goalNum ? `${count} / ${goalNum}語 達成` : `${count} / ${goalNum}語`;
+  goalBlock.classList.remove("hidden");
+}
+
+const dailyGoalBtns = document.querySelectorAll("[data-goal]");
+
+function updateDailyGoalUI() {
+  const goal = currentDailyGoal();
+  dailyGoalBtns.forEach((btn) => btn.classList.toggle("active", btn.dataset.goal === goal));
+}
+
+dailyGoalBtns.forEach((btn) => {
+  btn.addEventListener("click", () => {
+    localStorage.setItem("dailyGoal", btn.dataset.goal);
+    updateDailyGoalUI();
+    renderGoalBlock();
+  });
+});
+
+updateDailyGoalUI();
 
 // ---------- デッキ画面 ----------
 function currentDeck() {
@@ -542,6 +622,13 @@ function jstDateString(timestamp) {
 
 function recordReviewToday() {
   const today = jstDateString(Date.now());
+
+  if (state.stats.todayCountDate !== today) {
+    state.stats.todayCountDate = today;
+    state.stats.todayCount = 0;
+  }
+  state.stats.todayCount++;
+
   if (state.stats.lastReviewDate === today) return;
   const yesterday = jstDateString(Date.now() - DAY_MS);
   if (state.stats.lastReviewDate === yesterday) {

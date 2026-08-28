@@ -23,8 +23,18 @@
 
   <!-- ホーム：デッキ一覧 -->
   <section id="screen-home" class="screen">
+    <div id="goalBlock" class="goal-block hidden">
+      <div class="goal-label">
+        <span>今日の目標</span>
+        <span id="goalCount"></span>
+      </div>
+      <div class="gauge-track"><div id="goalFill" class="gauge-fill"></div></div>
+    </div>
     <div id="deckList" class="deck-list"></div>
-    <button id="newDeckBtn" class="text-btn">＋ 新しいデッキ</button>
+    <div class="home-actions">
+      <button id="newDeckBtn" class="text-btn">＋ 新しいデッキ</button>
+      <button id="deckReorderBtn" class="text-btn hidden">並び替え</button>
+    </div>
   </section>
 
   <!-- デッキ画面 -->
@@ -235,6 +245,16 @@
       </div>
     </div>
 
+    <div class="settings-block settings-row">
+      <label>今日の目標</label>
+      <div class="theme-toggle">
+        <button id="dailyGoalOffBtn" class="theme-toggle-btn" data-goal="off">オフ</button>
+        <button id="dailyGoal5Btn" class="theme-toggle-btn" data-goal="5">5</button>
+        <button id="dailyGoal10Btn" class="theme-toggle-btn" data-goal="10">10</button>
+        <button id="dailyGoal20Btn" class="theme-toggle-btn" data-goal="20">20</button>
+      </div>
+    </div>
+
     <div class="settings-block settings-block-end">
       <button id="helpBtn" class="secondary-btn">使い方を見る</button>
     </div>
@@ -260,6 +280,14 @@
     <div class="help-section">
       <h3>単語一覧</h3>
       <p>検索・絞り込み・並び替えができます。単語を左にスワイプすると削除ボタンが出ます。</p>
+    </div>
+    <div class="help-section">
+      <h3>今日の目標</h3>
+      <p>設定画面で1日の学習語数の目標を設定できます。ホーム画面に今日の達成状況が表示されます（「オフ」で非表示にできます）。</p>
+    </div>
+    <div class="help-section">
+      <h3>デッキの並び替え</h3>
+      <p>ホーム画面の「並び替え」から、デッキの表示順を▲▼ボタンで変更できます（デッキが2つ以上のときに表示されます）。</p>
     </div>
   </section>
 
