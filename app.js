@@ -997,28 +997,48 @@ function escapeHtml(str) {
 // ---------- 表示モード切り替え（デフォルトはライト） ----------
 const themeLightBtn = document.getElementById("themeLightBtn");
 const themeDarkBtn = document.getElementById("themeDarkBtn");
+const themeSystemBtn = document.getElementById("themeSystemBtn");
+const darkMediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
 
 function currentTheme() {
   return localStorage.getItem("theme") || "light";
+}
+
+// "system" のときは端末の設定（ライト/ダーク）に合わせた実際の表示を返す
+function resolvedTheme() {
+  const theme = currentTheme();
+  if (theme === "system") return darkMediaQuery.matches ? "dark" : "light";
+  return theme;
+}
+
+function applyTheme() {
+  document.documentElement.setAttribute("data-theme", resolvedTheme());
 }
 
 function updateThemeToggleUI() {
   const theme = currentTheme();
   themeLightBtn.classList.toggle("active", theme === "light");
   themeDarkBtn.classList.toggle("active", theme === "dark");
+  themeSystemBtn.classList.toggle("active", theme === "system");
 }
 
 function setTheme(theme) {
   localStorage.setItem("theme", theme);
-  document.documentElement.setAttribute("data-theme", theme);
+  applyTheme();
   updateThemeToggleUI();
 }
 
-document.documentElement.setAttribute("data-theme", currentTheme());
+applyTheme();
 updateThemeToggleUI();
 
 themeLightBtn.addEventListener("click", () => setTheme("light"));
 themeDarkBtn.addEventListener("click", () => setTheme("dark"));
+themeSystemBtn.addEventListener("click", () => setTheme("system"));
+
+// 「自動」選択中に端末側のライト/ダーク設定が変わったら追従する
+darkMediaQuery.addEventListener("change", () => {
+  if (currentTheme() === "system") applyTheme();
+});
 
 // ---------- 読み上げ速度（デフォルトは通常） ----------
 const speechRateNormalBtn = document.getElementById("speechRateNormalBtn");
